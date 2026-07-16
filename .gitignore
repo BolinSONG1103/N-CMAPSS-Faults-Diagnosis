@@ -1,5 +1,7 @@
 ﻿# MATLAB cache and generated files
 matlab/cache/
+matlab/outputs/*_smoke/
+matlab/outputs/t4_diagnostic_closure_seed_*/
 slprj/
 codegen/
 *.slxc
@@ -20,3 +22,4 @@ __pycache__/
 # System files
 Thumbs.db
 .DS_Store
+docs/~$*

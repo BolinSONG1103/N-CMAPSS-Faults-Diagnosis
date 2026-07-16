@@ -1,9 +1,0 @@
-regime,truth,prediction,count
-ood_combo,0,0,147
-ood_combo,1,0,6
-ood_combo,0,1,77
-ood_combo,1,1,410
-test_id,0,0,132
-test_id,1,0,15
-test_id,0,1,0
-test_id,1,1,263

@@ -1,0 +1,8 @@
+{
+  "analysis_type": "five_unit_isolated_repeated_splits",
+  "split_seeds": [314159, 314160, 314161, 314162, 314163],
+  "n_splits": 5,
+  "all_fast_mode_false": true,
+  "test_truth_used_for_selection": false,
+  "intermediate_seed_directories_kept": false
+}

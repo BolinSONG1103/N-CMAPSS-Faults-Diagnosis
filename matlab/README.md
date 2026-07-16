@@ -26,7 +26,7 @@ run_23_repeated_splits
 
 第一步生成并锁定 `outputs/protocol/unit_split_manifest.csv`，随后完成 calibration 选参、ID/OOD 诊断和 leave-one-fault-family-out 拒识；第二步完成约束消融、标准化残差噪声、固定偏置和逐通道缺失实验；第三步只读取落盘 CSV 生成五组闭环结果图；第四步验证 unit 隔离、选参来源、五个拒识折和图件分辨率。
 
-`run_23_repeated_splits` 会对五个 unit 划分重新拟合健康基准和 H，计算量最大，应在单次正式闭环与图表验证通过后运行。它不能用只重复决策阈值的方式替代，因为划分不确定性必须传播到健康基准、H、lambda 和诊断输出。
+`run_23_repeated_splits` 会对五个 unit 划分重新拟合健康基准和 H，计算量最大，应在单次正式闭环与图表验证通过后运行。它不能用只重复决策阈值的方式替代，因为划分不确定性必须传播到健康基准、H、lambda 和诊断输出。程序默认将 lambda 路径、持续性选择、阶段敏感性和未知故障折汇总到 `outputs/t6_repeated_splits/`，全部写入成功后删除四个可再生 seed 中间目录；调试时可调用 `experiment_23_repeated_splits(true)` 保留中间目录。
 
 建议先运行单元测试：
 
@@ -71,5 +71,5 @@ run_verify_stage_a
 - `src/`：实现、图形规范与验证器。
 - `run/`：运行入口。
 - `cache/`：复用模型和正式管线缓存。
-- `outputs/`：原始结果、阶段诊断和裁决。
+- `outputs/`：原始结果、阶段诊断和裁决；烟测目录与重复划分中间目录不进入版本库。
 - `../chapter3_results/`：正文 8 图清单、7 组程序图、11 张表和章节文稿。

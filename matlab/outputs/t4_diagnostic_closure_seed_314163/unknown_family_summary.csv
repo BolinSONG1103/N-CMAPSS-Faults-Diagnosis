@@ -1,6 +1,0 @@
-family,omitted_components,lambda,threshold,n_calibration_known,n_test_known,n_test_unknown,AUROC,AUPRC,known_accept_rate,unknown_reject_rate
-HPT_eff,1,0.001,0.414571675199457,4,4,1,0,0.1,0.75,0
-Fan,[2 3],31.6227766016838,0.444781041040626,4,4,1,1,1,0.75,1
-HPC,[4 5],100,0.456435010050092,3,3,2,1,1,0.333333333333333,1
-LPT,[6 7],0.001,0.426803124473253,4,4,1,1,1,0.75,1
-LPC,[8 9],31.6227766016838,0.439995282657482,4,4,1,1,1,0.75,1
