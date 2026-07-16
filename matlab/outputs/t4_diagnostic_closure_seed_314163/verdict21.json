@@ -1,0 +1,26 @@
+{
+  "analysis_type": "unit_isolated_diagnostic_closure",
+  "fast_mode": false,
+  "split_signature": "N-CMAPSS_DS01-005.h5:1:train|N-CMAPSS_DS01-005.h5:2:train|N-CMAPSS_DS01-005.h5:3:train|N-CMAPSS_DS01-005.h5:4:test_id|N-CMAPSS_DS01-005.h5:5:calibration|N-CMAPSS_DS01-005.h5:6:train|N-CMAPSS_DS04.h5:1:calibration|N-CMAPSS_DS04.h5:2:train|N-CMAPSS_DS04.h5:3:train|N-CMAPSS_DS04.h5:4:train|N-CMAPSS_DS04.h5:5:test_id|N-CMAPSS_DS04.h5:6:train|N-CMAPSS_DS05.h5:1:train|N-CMAPSS_DS05.h5:2:test_id|N-CMAPSS_DS05.h5:3:train|N-CMAPSS_DS05.h5:4:train|N-CMAPSS_DS05.h5:5:train|N-CMAPSS_DS05.h5:6:calibration|N-CMAPSS_DS06.h5:1:train|N-CMAPSS_DS06.h5:2:calibration|N-CMAPSS_DS06.h5:3:train|N-CMAPSS_DS06.h5:4:test_id|N-CMAPSS_DS06.h5:5:train|N-CMAPSS_DS06.h5:6:train|N-CMAPSS_DS07.h5:1:test_id|N-CMAPSS_DS07.h5:2:train|N-CMAPSS_DS07.h5:3:train|N-CMAPSS_DS07.h5:4:calibration|N-CMAPSS_DS07.h5:5:train|N-CMAPSS_DS07.h5:6:train",
+  "split_seed": 314163,
+  "lambda_selected_on_calibration": 31.622776601683793,
+  "component_threshold": [
+    0.012897193243597786,
+    0.0018533549425815686,
+    0.0019125746695107587,
+    0.011272258588055964,
+    0.0029182102781072682,
+    0.015604284845625566,
+    0.018117585340904924,
+    0.0026737129183101015,
+    0.0067273400880462362
+  ],
+  "persistence": 5,
+  "stage_components": 3,
+  "unknown_threshold": 0.4997405764152662,
+  "n_calibration_units": 5,
+  "n_test_units": 14,
+  "test_truth_used_for_selection": false,
+  "stage_is_engineering_limit": false,
+  "unknown_protocol": "leave_one_fault_family_out"
+}

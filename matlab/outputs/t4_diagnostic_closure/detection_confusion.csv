@@ -1,0 +1,9 @@
+regime,truth,prediction,count
+ood_combo,0,0,93
+ood_combo,1,0,0
+ood_combo,0,1,131
+ood_combo,1,1,416
+test_id,0,0,112
+test_id,1,0,29
+test_id,0,1,16
+test_id,1,1,266

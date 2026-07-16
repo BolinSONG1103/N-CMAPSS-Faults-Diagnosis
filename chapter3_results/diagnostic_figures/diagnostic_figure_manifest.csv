@@ -1,0 +1,6 @@
+figure_id,file_stem,question,source_data,selection_rule
+图3-D1,图3-D1_健康参数诊断阶段联合轨迹,连续估计如何转化为检测、隔离和阶段输出,diagnostic_cycle_raw.csv,DS03 中 unit 编号最小者，运行前固定
+图3-D2,图3-D2_故障检测与多标签隔离,闭环是否能够检测故障并隔离多个退化部件,detection_confusion.csv + component_metrics.csv,全部测试单元
+图3-D3,图3-D3_有序退化等级判定,数据定义的有序退化等级是否可重复识别,stage_confusion.csv + stage_component_sensitivity.csv,全部测试单元
+图3-D4,图3-D4_跨组合泛化与未知故障拒识,方法在未见组合和留一故障族上是否仍可靠,diagnostic_unit_metrics.csv + unknown_family_summary.csv,全部测试单元与全部留一故障族折
+图3-D5,图3-D5_约束消融与传感器扰动鲁棒性,性能来自哪些约束且对测量扰动是否稳定,ablation_unit_metrics.csv + robustness_summary.csv,全部测试单元、全部预注册消融和扰动等级

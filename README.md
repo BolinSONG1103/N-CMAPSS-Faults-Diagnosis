@@ -4,7 +4,11 @@
 
 ## 当前状态
 
-T0-T5、阶段 A 诊断和阶段 B/C 收尾均已完成。图件最终版将正文精简为 8 图：图3-1由作者手画，MATLAB 生成图3-2至图3-8共 7 组；同时保留 11 张正式表、第3章完整稿、数值汇总、裁决 JSON 和自动一致性核查。
+项目正在由“连续健康参数反演”升级为“连续估计—故障检测—多标签隔离—有序退化等级—未知故障拒识”的诊断闭环。新协议已经修复旧版数据驱动对照中的 unit 留出泄漏：健康基准、残差尺度和影响矩阵 H 只使用 train 发动机，lambda 与全部决策阈值只使用 calibration 发动机，test_id、DS02 与 DS03 不参与模型选择。
+
+闭环研究定义与结论边界见 `docs/第三章诊断闭环研究协议.md`；论文重构稿见 `chapter3_results/第3章诊断闭环重构稿.md`；实现入口见 `matlab/README.md`。正式数据尚未在该分支重跑，因此不得把重构稿中的待填槽位改成结论。
+
+旧版 T0-T5、阶段 A 与阶段 B/C 产物保留用于追溯连续反演方法的形成过程。旧版“E1 分布内公平性通过”不再属于正式结论，因为旧管线在声明留出单元前已经使用全部 dev 单元构造物理方法。
 
 锁定 HistGB 管线得到 cond(H_n)=1562.791820。MATLAB LSBoost 对照的条件数为 2048.976413，漂移 31.11%，因此 HistGB 兼容层是复现正式数字的永久依赖，而非临时过渡代码。
 
@@ -23,11 +27,14 @@ T0-T5、阶段 A 诊断和阶段 B/C 收尾均已完成。图件最终版将正�
 ## 最终构建与验证
 
 ```matlab
-cd('C:/Users/25691/Desktop/thesis_part3/matlab/run')
-run_build_results
-run_verify_stage_bc
+cd('D:/PythonProjects/N-CMAPSS-fault-diagnosis/matlab/run')
+run_21_diagnostic_closure
+run_22_robustness_ablation
+run_build_diagnostic_figures
+run_verify_diagnostic_closure
+run_23_repeated_splits
 ```
 
-`run_build_results` 从锁定结果完成 E3′、E4、最终表格和 7 组正文程序图，不重跑 P1-P4、Q1 或 Q3；仅在图3-2轨迹 CSV 不存在时，按任务书允许范围复算一台 DS03 发动机。`run_verify_stage_bc` 检查裁决一致性、图件格式、PNG 分辨率、Z_zero、禁用表述和 FAST_MODE 状态。
+前四个入口形成并验证单次正式闭环；最后一个入口在五个 unit 划分下重新拟合健康基准、H、lambda 和决策层，用于评估结论对机队划分的稳定性。
 
-需要从头复核既有阶段时，可使用 `run_t0_acceptance`、`run_19b`、`run_20`、`run_tau_check` 以及阶段 A 的四个诊断入口；这些步骤不是最终出图的必要前置条件。
+需要复核既有连续反演阶段时，仍可使用 `run_t0_acceptance`、`run_19b`、`run_20`、`run_tau_check` 和阶段 A 入口，但其输出不得覆盖闭环 v2 的正式结果。

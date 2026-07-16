@@ -11,6 +11,8 @@ classdef ncmapss_lib
             end
             cfg = struct();
             cfg.SEED = 42;
+            cfg.SPLIT_SEED = 314159;
+            cfg.SPLIT_FRACTIONS = [0.60,0.20,0.20]; % train/calibration/test_id
             cfg.N_HEALTHY_ID = 60000;
             cfg.N_DEGRADED_ID = 150000;
             cfg.MAX_PER_CYCLE = 1000;
@@ -22,6 +24,11 @@ classdef ncmapss_lib
             cfg.THETA_SPAN = [0.018668,0.223446,0.121209,0.025540, ...
                 0.070658,0.036194,0.032908,0.118767,0.046187];
             cfg.LAM_MAIN = 31.6;
+            cfg.LAMBDA_GRID = logspace(-3,3,13);
+            cfg.DECISION_ALPHA = 0.01;
+            cfg.UNKNOWN_ALPHA = 0.01;
+            cfg.PERSISTENCE_GRID = [1,2,3,5];
+            cfg.STAGE_COMPONENTS = 3;
             cfg.DATA_DIR = 'D:/N-CMPASS/data_set';
             cfg.FAST_MODE = logical(fastMode);
             cfg.SEG_Q = 0.75;
@@ -143,7 +150,10 @@ classdef ncmapss_lib
             end
         end
 
-        function tbl = load_for_ident(path,cfg,stream)
+        function tbl = load_for_ident(path,cfg,stream,onlyUnits)
+            if nargin < 4
+                onlyUnits = [];
+            end
             aNames = ncmapss_lib.get_names(path,'A_var');
             wNames = ncmapss_lib.get_names(path,'W_var');
             xNames = ncmapss_lib.get_names(path,'X_s_var');
@@ -151,8 +161,17 @@ classdef ncmapss_lib
 
             A = double(h5read(path,'/A_dev')).';
             hsCol = find(strcmp(aNames,'hs'),1);
-            healthy = find(A(:,hsCol)==1);
-            degraded = find(A(:,hsCol)==0);
+            unitCol = find(strcmp(aNames,'unit'),1);
+            allowed = true(size(A,1),1);
+            if ~isempty(onlyUnits)
+                allowed = ismember(A(:,unitCol),onlyUnits(:));
+            end
+            healthy = find(A(:,hsCol)==1 & allowed);
+            degraded = find(A(:,hsCol)==0 & allowed);
+            if isempty(healthy) || isempty(degraded)
+                error('ncmapss:EmptyIdentSplit', ...
+                    '辨识单元中缺少健康或退化样本: %s',path);
+            end
             kh = min(cfg.N_HEALTHY_ID,numel(healthy));
             kd = min(cfg.N_DEGRADED_ID,numel(degraded));
             takeH = healthy(ncmapss_lib.randperm_stream(stream,numel(healthy),kh));
@@ -232,7 +251,7 @@ classdef ncmapss_lib
                 'P15_c','P21_c','P24_c','Ps30_c','P40_c','P50_c'};
         end
 
-        function pipe = build_pipeline(cfg,stream,cacheFile,rebuild)
+        function pipe = build_pipeline(cfg,stream,cacheFile,rebuild,splitManifest)
             if nargin < 2 || isempty(stream)
                 stream = ncmapss_lib.make_stream(cfg.SEED,cfg.RNG_BACKEND);
             end
@@ -241,6 +260,22 @@ classdef ncmapss_lib
             end
             if nargin < 4
                 rebuild = false;
+            end
+            if nargin < 5
+                splitManifest = table();
+            end
+            requestedSplitSignature = ncmapss_lib.split_signature(splitManifest);
+            if ~rebuild && ~isempty(cacheFile) && isfile(cacheFile)
+                saved = load(cacheFile,'pipe');
+                pipe = saved.pipe;
+                cachedSignature = 'legacy_all_units';
+                if isfield(pipe,'split_signature')
+                    cachedSignature = pipe.split_signature;
+                end
+                if ~strcmp(cachedSignature,requestedSplitSignature)
+                    fprintf('  缓存划分签名不一致，重建管线。\n');
+                    rebuild = true;
+                end
             end
             if ~rebuild && ~isempty(cacheFile) && isfile(cacheFile)
                 saved = load(cacheFile,'pipe');
@@ -264,8 +299,10 @@ classdef ncmapss_lib
                 if ~isfile(path)
                     error('ncmapss:MissingData','找不到数据文件: %s',path);
                 end
-                data{i} = ncmapss_lib.load_for_ident(path,cfg,stream);
-                fprintf('  %-25s %7d 行\n',fileName,height(data{i}));
+                trainUnits = ncmapss_lib.units_for_role(splitManifest,fileName,'train');
+                data{i} = ncmapss_lib.load_for_ident(path,cfg,stream,trainUnits);
+                fprintf('  %-25s %7d 行，训练单元=%d\n', ...
+                    fileName,height(data{i}),numel(unique(data{i}.unit)));
             end
 
             healthy = cell(nFiles,1);
@@ -289,7 +326,12 @@ classdef ncmapss_lib
                 if isempty(cacheFile)
                     modelDir = fullfile(pwd,'sklearn_models');
                 else
-                    modelDir = fullfile(fileparts(cacheFile),'sklearn_models');
+                    if isempty(splitManifest)
+                        modelDir = fullfile(fileparts(cacheFile),'sklearn_models');
+                    else
+                        [~,cacheStem]=fileparts(cacheFile);
+                        modelDir = fullfile(fileparts(cacheFile),['sklearn_models_' cacheStem]);
+                    end
                 end
                 if ~isfolder(modelDir), mkdir(modelDir); end
                 for j = 1:numel(correctedCols)
@@ -358,6 +400,8 @@ classdef ncmapss_lib
                 'resid_cols',{residCols},'resid_std',residStd,'H',H,'Hn',Hn, ...
                 'cond_Hn',condHn,'span',cfg.THETA_SPAN,'cfg',cfg, ...
                 'baseline_backend',cfg.BASELINE_BACKEND, ...
+                'split_signature',requestedSplitSignature, ...
+                'split_manifest',splitManifest, ...
                 'rng_state_json',rngStateJson);
             if ~isempty(cacheFile)
                 cacheDir = fileparts(cacheFile);
@@ -538,6 +582,89 @@ classdef ncmapss_lib
             set(groot,'defaultAxesTickLabelInterpreter','none');
             set(groot,'defaultTextInterpreter','none');
             set(groot,'defaultLegendInterpreter','none');
+        end
+
+        function manifest = make_unit_split_manifest(cfg,outFile)
+            % 每个辨识子集内部按发动机 unit 独立划分，避免样本级泄漏。
+            if nargin < 2
+                outFile = '';
+            end
+            frac = cfg.SPLIT_FRACTIONS(:).';
+            assert(numel(frac)==3 && abs(sum(frac)-1)<1e-12, ...
+                'SPLIT_FRACTIONS 必须为和为 1 的三元向量。');
+            rows = cell(size(cfg.IDENT_FILES,1),1);
+            for i = 1:size(cfg.IDENT_FILES,1)
+                fileName = cfg.IDENT_FILES{i,1};
+                path = fullfile(cfg.DATA_DIR,fileName);
+                aNames = ncmapss_lib.get_names(path,'A_var');
+                A = double(h5read(path,'/A_dev')).';
+                unitCol = find(strcmp(aNames,'unit'),1);
+                units = sort(unique(A(:,unitCol)));
+                n = numel(units);
+                if n < 3
+                    error('ncmapss:TooFewUnits', ...
+                        '%s 仅有 %d 台发动机，无法进行三划分。',fileName,n);
+                end
+                stream = RandStream('mt19937ar','Seed',cfg.SPLIT_SEED+i);
+                units = units(randperm(stream,n));
+                nCal = max(1,round(frac(2)*n));
+                nTest = max(1,round(frac(3)*n));
+                while nCal+nTest >= n
+                    if nTest >= nCal && nTest>1
+                        nTest = nTest-1;
+                    elseif nCal>1
+                        nCal = nCal-1;
+                    else
+                        error('ncmapss:BadSplit','%s 无法保留训练单元。',fileName);
+                    end
+                end
+                nTrain = n-nCal-nTest;
+                role = [repmat("train",nTrain,1); ...
+                    repmat("calibration",nCal,1);repmat("test_id",nTest,1)];
+                subset = repmat(string(ncmapss_lib.subset_tag(fileName)),n,1);
+                rows{i} = table(repmat(string(fileName),n,1),subset,units(:),role, ...
+                    repmat(cfg.SPLIT_SEED,n,1), ...
+                    'VariableNames',{'file','subset','unit','role','split_seed'});
+            end
+            manifest = vertcat(rows{:});
+            manifest = sortrows(manifest,{'file','unit'});
+            if ~isempty(outFile)
+                outDir = fileparts(outFile);
+                if ~isempty(outDir) && ~isfolder(outDir), mkdir(outDir); end
+                writetable(manifest,outFile,'Encoding','UTF-8');
+            end
+        end
+
+        function units = units_for_role(manifest,fileName,role)
+            if isempty(manifest)
+                units = [];
+                return;
+            end
+            required = {'file','unit','role'};
+            assert(all(ismember(required,manifest.Properties.VariableNames)), ...
+                'unit split manifest 缺少必要列。');
+            q = string(manifest.file)==string(fileName) & ...
+                string(manifest.role)==string(role);
+            units = double(manifest.unit(q));
+            if isempty(units)
+                error('ncmapss:MissingSplitRole', ...
+                    '%s 没有角色 %s 的发动机。',fileName,role);
+            end
+        end
+
+        function signature = split_signature(manifest)
+            if isempty(manifest)
+                signature = 'legacy_all_units';
+                return;
+            end
+            t = sortrows(manifest,{'file','unit','role'});
+            parts = string(t.file)+":"+string(t.unit)+":"+string(t.role);
+            signature = char(strjoin(parts,'|'));
+        end
+
+        function tag = subset_tag(fileName)
+            tag = erase(string(fileName),["N-CMAPSS_",".h5"]);
+            tag = char(tag);
         end
     end
 end

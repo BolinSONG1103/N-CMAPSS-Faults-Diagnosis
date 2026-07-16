@@ -6,10 +6,10 @@ srcDir=fileparts(mfilename('fullpath')); matlabRoot=fileparts(srcDir); addpath(s
 cfg=ncmapss_lib.config(fastMode); ncmapss_lib.set_plot_defaults();
 if fastMode
     windows=[10 1000]; epochs=8; maxUnits=2; unitLimit=3;
-    outDir=fullfile(matlabRoot,'outputs','t2_dd_smoke');
+    outDir=fullfile(matlabRoot,'outputs','t2_dd_v2_smoke');
 else
     windows=[1 10 100 1000]; epochs=40; maxUnits=inf; unitLimit=inf;
-    outDir=fullfile(matlabRoot,'outputs','t2_dd');
+    outDir=fullfile(matlabRoot,'outputs','t2_dd_v2');
 end
 if ~isfolder(outDir), mkdir(outDir); end
 logFile=fullfile(outDir,'run.log'); if isfile(logFile), delete(logFile); end
@@ -19,33 +19,52 @@ fprintf('%s\nT2 MATLAB：数据驱动对照 × 组合外推，FAST_MODE=%d\n%s\n
     repmat('=',1,100),fastMode,repmat('=',1,100));
 fprintf('预注册：E1 最佳数据驱动>=D-0.05；E2 DS02/03 D逐臂全胜；E3 非线性落差>D+0.05。\n');
 
+protocolDir=fullfile(matlabRoot,'outputs','protocol');
+manifestFile=fullfile(protocolDir,'unit_split_manifest.csv');
+splitManifest=ncmapss_lib.make_unit_split_manifest(cfg,manifestFile);
 pipeStream=ncmapss_lib.make_stream(cfg.SEED,cfg.RNG_BACKEND);
-pipe=ncmapss_lib.build_pipeline(cfg,pipeStream,fullfile(matlabRoot,'cache','pipeline_cache_exact.mat'),false);
-assert(abs(pipe.cond_Hn-cfg.COND_TARGET)/cfg.COND_TARGET<=cfg.COND_REL_TOL,'T0 指纹失效。');
+pipe=ncmapss_lib.build_pipeline(cfg,pipeStream, ...
+    fullfile(matlabRoot,'cache','pipeline_cache_split_v2.mat'),false,splitManifest);
 dataStream=ncmapss_lib.make_stream(cfg.SEED,cfg.RNG_BACKEND);
 
-% 全部 dev 单元进入候选训练机队；DS05/DS07 最后两台留出做分布内评测。
-trainSeqs={}; indist=struct('DS05_id',{{}},'DS07_id',{{}});
+% 所有方法严格共用 train/calibration/test_id 的发动机单元划分。
+trainSeqs={}; valSeqs={}; indist={};
 for i=1:size(cfg.IDENT_FILES,1)
     file=cfg.IDENT_FILES{i,1}; params=cfg.IDENT_FILES{i,2};
-    d=ncmapss_lib.load_per_cycle(fullfile(cfg.DATA_DIR,file),'dev',cfg,dataStream,[]);
+    trainUnits=ncmapss_lib.units_for_role(splitManifest,file,'train');
+    calUnits=ncmapss_lib.units_for_role(splitManifest,file,'calibration');
+    testUnits=ncmapss_lib.units_for_role(splitManifest,file,'test_id');
+    if isfinite(unitLimit)
+        trainUnits=trainUnits(1:min(unitLimit,numel(trainUnits)));
+        calUnits=calUnits(1:min(unitLimit,numel(calUnits)));
+        testUnits=testUnits(1:min(unitLimit,numel(testUnits)));
+    end
+    selected=unique([trainUnits(:);calUnits(:);testUnits(:)]);
+    d=ncmapss_lib.load_per_cycle(fullfile(cfg.DATA_DIR,file),'dev',cfg,dataStream,selected);
     [d,~]=ncmapss_lib.add_corrected(d,pipe.ref); d=ncmapss_lib.attach_residuals(pipe,d);
-    units=sort(unique(d.unit)); if isfinite(unitLimit), units=units(1:min(unitLimit,numel(units))); end
-    tag=''; if strcmp(file,'N-CMAPSS_DS05.h5'), tag='DS05_id'; end
-    if strcmp(file,'N-CMAPSS_DS07.h5'), tag='DS07_id'; end
-    held=[]; if ~isempty(tag), held=units(max(1,numel(units)-1):end); end
+    units=sort(unique(d.unit)); tag=[ncmapss_lib.subset_tag(file) '_id'];
     for u=units.'
         seq=unit_sequence(d(d.unit==u,:),cfg);
-        item=struct('per',seq,'file',file,'unit',double(u),'faults',{params});
-        if ismember(u,held), indist.(tag){end+1}=item; else, trainSeqs{end+1}=item; end %#ok<AGROW>
+        item=struct('per',seq,'file',file,'subset',tag, ...
+            'unit',double(u),'faults',{params});
+        if ismember(u,trainUnits)
+            trainSeqs{end+1}=item; %#ok<AGROW>
+        elseif ismember(u,calUnits)
+            valSeqs{end+1}=item; %#ok<AGROW>
+        elseif ismember(u,testUnits)
+            indist{end+1}=item; %#ok<AGROW>
+        end
     end
-    fprintf('%-25s 训练%d台 / 留出%d台\n',file,numel(units)-numel(held),numel(held));
+    fprintf('%-25s 训练%d台 / 标定%d台 / 测试%d台\n', ...
+        file,numel(trainUnits),numel(calUnits),numel(testUnits));
     clear d
 end
 
 order=ncmapss_lib.randperm_stream(dataStream,numel(trainSeqs),numel(trainSeqs)); trainSeqs=trainSeqs(order);
-nVal=max(1,floor(numel(trainSeqs)/5)); valSeqs=trainSeqs(1:nVal); trSeqs=trainSeqs(nVal+1:end);
-fprintf('按发动机切分：训练%d台，验证%d台。\n',numel(trSeqs),numel(valSeqs));
+order=ncmapss_lib.randperm_stream(dataStream,numel(valSeqs),numel(valSeqs)); valSeqs=valSeqs(order);
+trSeqs=trainSeqs;
+fprintf('固定清单：训练%d台，标定%d台，分布内测试%d台。\n', ...
+    numel(trSeqs),numel(valSeqs),numel(indist));
 
 [models,linear,counts,trainInfo]=train_arms(trSeqs,valSeqs,windows,L,opts,dataStream,cfg.SEED);
 writetable(struct2table(counts),fullfile(outDir,'parameter_counts.csv'),'Encoding','UTF-8');
@@ -143,12 +162,9 @@ end
 
 function raw=evaluate_all(models,linear,indist,pipe,cfg,stream,windows,L,maxUnits)
 rows={};
-tags={'DS05_id','DS07_id'};
-for i=1:numel(tags)
-    list=indist.(tags{i});
-    for j=1:numel(list)
-        rows{end+1,1}=eval_item(list{j},tags{i},'in_dist',models,linear,pipe,cfg,stream,windows,L); %#ok<AGROW>
-    end
+for j=1:numel(indist)
+    rows{end+1,1}=eval_item(indist{j},indist{j}.subset,'in_dist', ...
+        models,linear,pipe,cfg,stream,windows,L); %#ok<AGROW>
 end
 for iv=1:size(cfg.VALID_FILES,1)
     tag=cfg.VALID_FILES{iv,1}; file=cfg.VALID_FILES{iv,2}; faults=cfg.VALID_FILES{iv,3};

@@ -1,0 +1,33 @@
+================================================================================================
+第3章诊断闭环，FAST_MODE=0
+================================================================================================
+冻结协议：unit 三划分；lambda 仅由 calibration 选择；alpha=0.010；K 候选=[1 2 3 5]。
+
+[1/3] 选择性读取 5 个辨识子集 ...
+  N-CMAPSS_DS01-005.h5       210000 行，训练单元=4
+  N-CMAPSS_DS04.h5           210000 行，训练单元=4
+  N-CMAPSS_DS05.h5           210000 行，训练单元=4
+  N-CMAPSS_DS07.h5           210000 行，训练单元=4
+  N-CMAPSS_DS06.h5           210000 行，训练单元=4
+  全局参考: T_ref=495.714370, P_ref=10.535095
+
+[2/3] 拟合 13 个健康基准（后端=sklearn_histgb_compat）...
+  [01/13] Nf_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_01.joblib
+  [02/13] Nc_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_02.joblib
+  [03/13] Wf_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_03.joblib
+  [04/13] T24_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_04.joblib
+  [05/13] T30_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_05.joblib
+  [06/13] T48_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_06.joblib
+  [07/13] T50_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_07.joblib
+  [08/13] P15_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_08.joblib
+  [09/13] P21_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_09.joblib
+  [10/13] P24_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_10.joblib
+  [11/13] Ps30_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_11.joblib
+  [12/13] P40_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_12.joblib
+  [13/13] P50_c -> D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\sklearn_models_pipeline_cache_split_v2_seed_314163\histgb_13.joblib
+
+[3/3] 辨识 H 并做量程归一化 ...
+  cond(H_n) = 1169.708012
+  管线缓存已保存: D:\N-CMAPSS-diagnostic-closure-v2\matlab\cache\pipeline_cache_split_v2_seed_314163.mat
+calibration 锁定 lambda = 31.622777。
+闭环原始结果已落盘：9621 条 cycle-component 记录，14 台测试发动机。

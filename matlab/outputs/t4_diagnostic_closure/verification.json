@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "split_files": 5,
+  "split_rows": 30,
+  "test_units": 14,
+  "cycle_component_rows": 9567,
+  "unknown_folds": 5,
+  "figure_sets": 5,
+  "ablation_methods": 4,
+  "missing_channel_folds": 13,
+  "test_truth_used_for_selection": false
+}

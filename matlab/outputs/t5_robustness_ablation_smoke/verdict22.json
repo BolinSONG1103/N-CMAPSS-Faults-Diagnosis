@@ -1,0 +1,30 @@
+{
+  "analysis_type": "preregistered_ablation_and_sensor_perturbation",
+  "fast_mode": true,
+  "methods": [
+    "D_full",
+    "B_unconstrained",
+    "sign_only",
+    "D_no_shrink"
+  ],
+  "noise_sigma_units": [
+    0,
+    0.25,
+    0.5,
+    1
+  ],
+  "bias_sigma_units": [
+    0.25,
+    0.5,
+    1
+  ],
+  "missing_channel_folds": 13,
+  "baseline_reference_cycles": [
+    1,
+    3,
+    5
+  ],
+  "perturbation_seeds": 43,
+  "thresholds_recalibrated_for_perturbation": false,
+  "decision_layer_recalibrated_per_ablation": true
+}
