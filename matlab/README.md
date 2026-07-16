@@ -22,16 +22,19 @@ run_22_robustness_ablation
 run_build_diagnostic_figures
 run_verify_diagnostic_closure
 run_23_repeated_splits
+run_24_family_diagnosis
 ```
 
 第一步生成并锁定 `outputs/protocol/unit_split_manifest.csv`，随后完成 calibration 选参、ID/OOD 诊断和 leave-one-fault-family-out 拒识；第二步完成约束消融、标准化残差噪声、固定偏置和逐通道缺失实验；第三步只读取落盘 CSV 生成五组闭环结果图；第四步验证 unit 隔离、选参来源、五个拒识折和图件分辨率。
 
 `run_23_repeated_splits` 会对五个 unit 划分重新拟合健康基准和 H，计算量最大，应在单次正式闭环与图表验证通过后运行。它不能用只重复决策阈值的方式替代，因为划分不确定性必须传播到健康基准、H、lambda 和诊断输出。程序默认将 lambda 路径、持续性选择、阶段敏感性和未知故障折汇总到 `outputs/t6_repeated_splits/`，全部写入成功后删除四个可再生 seed 中间目录；调试时可调用 `experiment_23_repeated_splits(true)` 保留中间目录。
 
+`run_24_family_diagnosis` 读取主划分已经锁定的连续反演模型，按运行前冻结的 HPT/Fan/HPC/LPT/LPC 映射建立五部件族多标签诊断；协议见 `../docs/部件族诊断补充协议.md`。该实验只修正离散诊断目标层级，不覆盖九维参数级结果。
+
 建议先运行单元测试：
 
 ```matlab
-results = runtests('../tests/test_chapter3_diagnostic_lib.m');
+results = runtests('../tests');
 assertSuccess(results)
 ```
 
