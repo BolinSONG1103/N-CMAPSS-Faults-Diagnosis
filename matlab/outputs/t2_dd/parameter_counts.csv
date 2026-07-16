@@ -1,0 +1,5 @@
+arm,parameters
+E_Lin,126
+E_MLP,5641
+E_MixLinear,1881
+E_WPMixer,13961

@@ -1,0 +1,10 @@
+theta_index,parameter
+1,HPT_eff_mod
+2,fan_eff_mod
+3,fan_flow_mod
+4,HPC_eff_mod
+5,HPC_flow_mod
+6,LPT_eff_mod
+7,LPT_flow_mod
+8,LPC_eff_mod
+9,LPC_flow_mod

@@ -1,0 +1,16 @@
+{
+  "analysis_type": "stage_A_baseline_sensitivity",
+  "locked_backend": "sklearn_histgb_compat",
+  "control_backend": "matlab_lsboost_control",
+  "cond_locked": 1562.7918201945549,
+  "cond_native": 2048.9764126828481,
+  "cond_relative_drift": 0.31110003661765212,
+  "skill_locked": 0.957563972105055,
+  "skill_native": 0.95771642817058356,
+  "skill_absolute_drift": 0.00015245606552860558,
+  "cond_within_one_percent": false,
+  "skill_within_0p01": true,
+  "automatic_switch_allowed": false,
+  "dependency_status": "permanent_for_locked_preregistered_results",
+  "author_decision_required_for_future_native_switch": true
+}

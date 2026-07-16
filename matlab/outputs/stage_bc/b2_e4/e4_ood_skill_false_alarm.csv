@@ -1,0 +1,7 @@
+arm,ood_skill,ood_false_alarm,parameters,group,false_alarm_ratio_to_D
+D,0.9442747,0.0018240135,0,physics_constrained,1
+E_Lin,0.8214841,0.0058069835,126,linear_shallow,3.18362967160057
+E_MixLinear,0.8411995,0.006029749,1881,linear_shallow,3.30575897601635
+E_MLP,0.1814725,0.03802318,5641,deep_nonlinear,20.8458873796713
+E_WPMixer,-7.5332775,0.15379905,13961,deep_nonlinear,84.3190305334911
+Z_zero,0,0,0,sentinel,0

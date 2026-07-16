@@ -1,0 +1,20 @@
+{
+  "FAST_MODE": false,
+  "Q1": true,
+  "Q1_forward_gain": 0.379042864,
+  "Q2f_mechanism_consistent": true,
+  "Q2f_median_gap": -0.00065468040998217791,
+  "Q2s": false,
+  "Q2s_dominance_rate": 0.625,
+  "Q2s_median_gap": 0.0031486454295786559,
+  "Q3": true,
+  "Q4": true,
+  "Q6_moe_minus_TRA4": [
+    0.0010992771090794218,
+    -0.000708670849361992
+  ],
+  "direction_change_ratio": 0.0036962398368653323,
+  "direction_cosine_min": 0.9999125654108606,
+  "highTRA_fallback_rate": 0,
+  "core_pass": false
+}

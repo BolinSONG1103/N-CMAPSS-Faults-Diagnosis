@@ -1,0 +1,9 @@
+figure_id,file_stem,section,purpose,source_data,figure_eye,generated,formats
+图3-1,图3-1_方法总流程图,3.1,作者手画的方法总流程图；程序不生成,作者手画，无程序数据,方法从数据预处理、H辨识到约束反演和外推验证的完整流程。,0,author
+图3-2,图3-2_三部件退化轨迹估计,3.2-3.4,DS03 unit 13 的 D 约束反演轨迹与真值,figure_data/fig3_2_ds03_unit13_trajectory.csv,约束反演从含噪残差中逐循环恢复三部件退化轨迹，估计贴合真值，未退化部件保持零线附近。,1,png;pdf
+图3-3,图3-3_影响矩阵结构与可辨识性,3.3,H_n热力图、奇异值谱和部件列向量夹角,cache/pipeline_cache_exact.mat,影响矩阵病态但部件故障方向在传感器空间形成可区分指纹，是约束反演定位部件的几何基础。,1,png;pdf
+图3-4,图3-4_约束独立价值,3.5,完整网格占优率与同机未退化部件轨迹,raw_scan.csv; figure_data/fig3_2_ds03_unit13_trajectory.csv,约束方法在全部168个网格点降低虚警，D的未退化部件估计贴合零线，而无约束B出现虚警。,1,png;pdf
+图3-5,图3-5_经典lambda准则失效机制,3.5,B/D真实技能分路径与tau_required-sqrt(N)拟合,raw_scan.csv; selected_lambda.csv; tau_required_points.csv,约束托平D的弱收缩路径，L-curve和Morozov在D上集体退化，tau_required随sqrt(N)线性增长。,1,png;pdf
+图3-6,图3-6_无约束路径代理标定,3.5,B@L-curve、D@代理lambda和D oracle技能分,tables/表3_代理路径标定.csv,无约束L-curve可代理D的收缩强度，DS03达标而DS02以0.009之差未达预注册阈值。,1,png;pdf
+图3-7,图3-7_工况增益被收缩吸收,3.6,MoE-H0技能分差随lambda的full/highTRA路径,t1_moe/pointwise_gap.csv; stage_a/a3_q2/q2_lambda_raw.csv,工况自适应增益仅在弱收缩下显现，主工作点lambda=31.6时约束-收缩吸收了工况幅值失配。,1,png;pdf
+图3-8,图3-8_外推技能与虚警分裂,3.7,OOD技能-虚警对照与同子集逐配对D减臂技能差,b2_e4/e4_ood_skill_false_alarm.csv; b1_e3prime/e3prime_paired_raw.csv,线性臂保有外推能力但虚警约为D的3倍，深层臂崩溃；D兼得高技能与低虚警。,1,png;pdf

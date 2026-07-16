@@ -1,0 +1,7 @@
+arm,in_dist,ood_combo,gap,interpretation_status
+D,0.734889149665833,0.944274723529816,-0.209385573863983,archived_cross_subset_not_for_conclusion
+E_Lin,0.409042090177536,0.821484088897705,-0.412441998720169,archived_cross_subset_not_for_conclusion
+E_MLP,-0.447963953018188,0.181472539901733,-0.629436492919922,archived_cross_subset_not_for_conclusion
+E_MixLinear,0.750529289245605,0.841199517250061,-0.0906702280044556,archived_cross_subset_not_for_conclusion
+E_WPMixer,-8.78057765960693,-7.53327751159668,-1.24730014801025,archived_cross_subset_not_for_conclusion
+Z_zero,0,0,0,sentinel

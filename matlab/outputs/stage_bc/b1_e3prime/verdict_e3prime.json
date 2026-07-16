@@ -1,0 +1,80 @@
+{
+  "criterion": "E3prime tests D dominance against deep arms >=95%; linear arms are descriptive",
+  "threshold": 0.95,
+  "E3prime_a_deep": true,
+  "deep_group_rate": 1,
+  "deep_group_ci95": [
+    0.94934882740354232,
+    0.99999999999999989
+  ],
+  "deep_arm_results": [
+    {
+      "arm": "E_MLP",
+      "group": "deep_nonlinear",
+      "role": "formal",
+      "n_pairs": 36,
+      "D_wins": 36,
+      "D_win_rate": 1,
+      "win_ci_low": 0.90358137140553674,
+      "win_ci_high": 1,
+      "median_gap": 0.60172005,
+      "q25_gap": 0.47631535,
+      "q75_gap": 1.1155911,
+      "mean_gap": 0.742428509638889,
+      "formal_threshold": 0.95,
+      "verdict": "pass"
+    },
+    {
+      "arm": "E_WPMixer",
+      "group": "deep_nonlinear",
+      "role": "formal",
+      "n_pairs": 36,
+      "D_wins": 36,
+      "D_win_rate": 1,
+      "win_ci_low": 0.90358137140553674,
+      "win_ci_high": 1,
+      "median_gap": 5.3269263,
+      "q25_gap": 3.0127414999999997,
+      "q75_gap": 12.76309065,
+      "mean_gap": 8.6707176083333337,
+      "formal_threshold": 0.95,
+      "verdict": "pass"
+    }
+  ],
+  "linear_arm_results": [
+    {
+      "arm": "E_Lin",
+      "group": "linear_shallow",
+      "role": "descriptive",
+      "n_pairs": 36,
+      "D_wins": 32,
+      "D_win_rate": 0.88888888888888884,
+      "win_ci_low": 0.74685191409635165,
+      "win_ci_high": 0.95593359699684344,
+      "median_gap": 0.060837300000000052,
+      "q25_gap": 0.04991525,
+      "q75_gap": 0.11099175,
+      "mean_gap": 0.11185652222222221,
+      "formal_threshold": null,
+      "verdict": "boundary"
+    },
+    {
+      "arm": "E_MixLinear",
+      "group": "linear_shallow",
+      "role": "descriptive",
+      "n_pairs": 36,
+      "D_wins": 30,
+      "D_win_rate": 0.83333333333333337,
+      "win_ci_low": 0.68109205688720575,
+      "win_ci_high": 0.92129552404981874,
+      "median_gap": 0.091557600000000045,
+      "q25_gap": 0.0188957000000001,
+      "q75_gap": 0.2326535,
+      "mean_gap": 0.11188249444444448,
+      "formal_threshold": null,
+      "verdict": "boundary"
+    }
+  ],
+  "linear_result_is_not_pass_fail": true,
+  "original_E3_remains_false": true
+}

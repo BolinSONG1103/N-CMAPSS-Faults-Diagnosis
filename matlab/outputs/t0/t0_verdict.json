@@ -1,0 +1,15 @@
+{
+  "stage": "T0",
+  "fast_mode": false,
+  "baseline_backend": "sklearn_histgb_compat",
+  "cond_target": 1562.8,
+  "cond_actual": 1562.7918201945549,
+  "cond_relative_error": 5.2340705432714444E-6,
+  "cond_pass": true,
+  "skill_target": 0.957064895267337,
+  "skill_actual": 0.957563972105055,
+  "skill_absolute_error": 0.00049907683771799327,
+  "skill_pass": true,
+  "overall_pass": true,
+  "raw_csv": "C:\\Users\\25691\\Desktop\\thesis_part3\\matlab\\outputs\\t0\\t0_ds03_raw.csv"
+}

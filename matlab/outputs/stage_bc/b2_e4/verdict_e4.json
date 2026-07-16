@@ -1,0 +1,11 @@
+{
+  "D_skill": 0.9442747,
+  "D_false_alarm": 0.0018240135,
+  "E_Lin_skill": 0.82148409999999994,
+  "E_Lin_false_alarm_ratio_to_D": 3.1836296716005665,
+  "E_MixLinear_skill": 0.8411995,
+  "E_MixLinear_false_alarm_ratio_to_D": 3.3057589760163508,
+  "E_MLP_skill": 0.18147249999999998,
+  "E_WPMixer_skill": -7.5332775,
+  "conclusion": "linearity supports extrapolation; hard constraints provide specificity"
+}

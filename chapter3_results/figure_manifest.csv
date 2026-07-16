@@ -1,0 +1,13 @@
+figure_id,file_stem,section,purpose,source_data,figure_eye,generated,formats
+图3-1,图3-1_方法总流程图,3.1,作者手画的方法总流程图；程序不生成,作者手画，无程序数据,方法从数据预处理、影响矩阵辨识到约束反演和外推验证形成闭环。,0,author
+图3-2,图3-2_相似修正效果,3.2,DS03 unit 13 健康早期压力通道相似修正前后工况漂移,complete_figures/data/a1_similarity_correction.csv,相似修正将代表性压力通道的工况漂移幅度压缩约85%-92%，为健康基准残差化提供稳定输入。,1,png;pdf
+图3-3,图3-3_健康基准拟合,3.2,六个代表修正通道的健康基准预测-实测一致性,complete_figures/data/a2_baseline_fit.csv,健康基准在正常样本上高精度还原修正通道，其残差可作为部件退化的观测量。,1,png;pdf
+图3-4,图3-4_影响矩阵结构与可辨识性,3.3,H_n热力图、奇异值谱和部件列向量夹角,cache/pipeline_cache_exact.mat,影响矩阵虽为病态系统，但部件方向仍可区分，为约束反演定位部件提供几何基础。,1,png;pdf
+图3-5,图3-5_三部件退化轨迹估计,3.4,DS03 unit 13 九部件D约束反演轨迹与真值,stage_bc/figure_data/fig3_2_ds03_unit13_trajectory.csv,约束反演逐循环恢复三部件退化轨迹，并将六个未退化部件限制在零线邻域。,1,png;pdf
+图3-6,图3-6_约束抑制未退化部件虚警,3.5,同一代表机未退化部件与真退化部件的B/D轨迹对照,stage_bc/figure_data/fig3_2_ds03_unit13_trajectory.csv,无约束B在未退化部件上产生可见虚警，约束D保持零线并改善真退化轨迹的稳定性。,1,png;pdf
+图3-7,图3-7_收缩强度轨迹效应,3.5,DS03 unit 13 的LPT效率在弱、中、强收缩下的D轨迹,complete_figures/data/b3_lambda_trajectory.csv,收缩过弱导致退化幅度过冲，收缩过强压平轨迹，适中收缩最接近真值。,1,png;pdf
+图3-8,图3-8_多台发动机逐部件误差,3.5,DS02/DS03各测试机真实退化部件D与Z_zero轨迹RMSE配对,complete_figures/data/b4_multiunit_component_error.csv,约束反演在全部测试发动机的真实退化部件上均获得低于全零哨兵的轨迹误差。,1,png;pdf
+图3-9,图3-9_经典lambda准则失效,3.5,B/D真实技能分路径、经典准则选点与tau_required-sqrt(N),raw_scan.csv; selected_lambda.csv; tau_required_points.csv,约束托平D的弱收缩路径，使经典lambda准则偏离最优区；tau_required随sqrt(N)近似线性增长。,1,png;pdf
+图3-10,图3-10_工况增益被收缩吸收,3.6,MoE-H0技能分差随lambda的full/highTRA路径,t1_moe/pointwise_gap.csv; stage_a/a3_q2/q2_lambda_raw.csv,工况自适应增益主要出现在弱收缩区，主工作点的约束与收缩将其压缩到接近零。,1,png;pdf
+图3-11,图3-11_外推真退化部件轨迹,3.7,未见三故障组合中LPT效率的D/E_Lin/E_MLP/真值轨迹,complete_figures/data/c3_c4_extrapolation_trajectory.csv,未见故障组合上D最贴近真值，线性模型保留退化趋势，MLP出现轨迹波动与末期过冲。,1,png;pdf
+图3-12,图3-12_外推未退化部件虚警,3.7,同一外推场景中未退化LPC效率轨迹及全OOD虚警比,complete_figures/data/c3_c4_extrapolation_trajectory.csv; b2_e4/e4_ood_skill_false_alarm.csv,未退化部件上D保持零线，E_Lin出现可见虚警，E_MLP的偏离进一步扩大。,1,png;pdf

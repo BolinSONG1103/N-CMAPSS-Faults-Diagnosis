@@ -1,0 +1,16 @@
+criterion,verdict,source,Z_zero_skill
+P1,通过,raw_scan.csv,0
+P2经典准则,未通过,selected_lambda.csv,0
+P4代理标定,部分通过：DS03通过，DS02未通过,表3,0
+T3_tau_sqrtN,通过,verdict_tau.json,0
+Q1,通过,verdict19b.json,0
+Q2f,描述性一致,verdict19b.json,0
+Q2s,未通过,verdict19b.json,0
+Q3,通过,verdict19b.json,0
+Q4,通过,verdict19b.json,0
+Q6,描述性边界,verdict19b.json,0
+E1,通过,verdict20.json,0
+E2,通过,verdict20.json,0
+E3prime-a,通过：深层臂最小占优率100%,e3prime_split_summary.csv,0
+E3prime-b,描述性：线性臂占优率83.3%-88.9%,e3prime_split_summary.csv,0
+原E3,归档：跨子集落差不作结论,original_E3_gap_archived.csv,0

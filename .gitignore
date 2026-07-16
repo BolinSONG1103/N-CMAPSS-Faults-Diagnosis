@@ -1,0 +1,22 @@
+﻿# MATLAB cache and generated files
+matlab/cache/
+slprj/
+codegen/
+*.slxc
+*.asv
+
+# Python cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# Development environments
+.vscode/
+.idea/
+
+# Private configuration
+.env
+
+# System files
+Thumbs.db
+.DS_Store

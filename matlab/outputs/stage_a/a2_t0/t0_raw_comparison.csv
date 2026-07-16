@@ -1,0 +1,4 @@
+source,subset,N,lambda,method,n_units,skill,abs_diff_from_raw
+reference_raw_scan,DS03,1000,31.6227766016838,D,6,0.957064895267337,0
+matlab_recompute,DS03,1000,31.6,D,6,0.957563972105055,0.000499076837718437
+Z_zero,DS03,1000,31.6,Z_zero,6,0,NaN

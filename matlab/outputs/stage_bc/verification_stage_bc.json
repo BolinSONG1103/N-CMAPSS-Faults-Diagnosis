@@ -1,0 +1,19 @@
+{
+  "stage": "BC_figure_v2",
+  "pass": true,
+  "manifest_rows": 8,
+  "program_figure_sets": 7,
+  "figure_files_per_format": 7,
+  "formats": [
+    "png",
+    "pdf"
+  ],
+  "png_min_dpi": 599.99879999999962,
+  "png_max_dpi": 599.99879999999962,
+  "final_tables": 11,
+  "all_tables_have_Z_zero": true,
+  "signed_log_absent": true,
+  "figure_eye_captions_verified": true,
+  "fast_mode_numbers_used": false,
+  "verdict_consistent": true
+}

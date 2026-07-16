@@ -1,0 +1,73 @@
+{
+  "analysis_type": "posthoc_not_preregistered",
+  "formal_Q2s_remains_false": true,
+  "formal_Q2s_dominance_rate": 0.625,
+  "formal_Q2s_median_gap": 0.0031486454295786559,
+  "lambda_small": 0.001,
+  "lambda_main_nearest": 31.622776601683793,
+  "q75_small_rate": 1,
+  "q75_small_median_gap": 0.34942770852343474,
+  "q75_main_rate": 0.375,
+  "q75_main_median_gap": -0.00016168916917717397,
+  "paired_median_improvement": 0.3497187102764015,
+  "paired_median_improvement_ci95": [
+    0.31857758227290389,
+    0.37022958146589219
+  ],
+  "shrinkage_explanation_supported": true,
+  "median_abs_gain_minus1_q75": 0.10058459829764399,
+  "quantile_summary": [
+    {
+      "quantile": 0.75,
+      "fallback_rate": 0,
+      "formal_rate": 0.625,
+      "formal_median_gap": 0.0023895299168327179,
+      "small_lambda": 0.001,
+      "small_rate": 1,
+      "small_median_gap": 0.34942770852343474,
+      "main_lambda": 31.622776601683793,
+      "main_rate": 0.375,
+      "main_median_gap": -0.00016168916917717397,
+      "median_abs_gain_minus1": 0.10058459829764399
+    },
+    {
+      "quantile": 0.85,
+      "fallback_rate": 0,
+      "formal_rate": 0.72222222222222221,
+      "formal_median_gap": 0.00708869292733362,
+      "small_lambda": 0.001,
+      "small_rate": 1,
+      "small_median_gap": 0.35297381376763221,
+      "main_lambda": 31.622776601683793,
+      "main_rate": 1,
+      "main_median_gap": 0.0039861074147191193,
+      "median_abs_gain_minus1": 0.1136746344281665
+    },
+    {
+      "quantile": 0.9,
+      "fallback_rate": 0,
+      "formal_rate": 0.72222222222222221,
+      "formal_median_gap": 0.0074292787613047025,
+      "small_lambda": 0.001,
+      "small_rate": 1,
+      "small_median_gap": 0.39216512544571813,
+      "main_lambda": 31.622776601683793,
+      "main_rate": 1,
+      "main_median_gap": 0.0052326217758999188,
+      "median_abs_gain_minus1": 0.11733160623863551
+    },
+    {
+      "quantile": 0.95,
+      "fallback_rate": 0,
+      "formal_rate": 0.70833333333333337,
+      "formal_median_gap": 0.00988006528406896,
+      "small_lambda": 0.001,
+      "small_rate": 1,
+      "small_median_gap": 0.40719587110495747,
+      "main_lambda": 31.622776601683793,
+      "main_rate": 1,
+      "main_median_gap": 0.00787217705010759,
+      "median_abs_gain_minus1": 0.121498293841063
+    }
+  ]
+}

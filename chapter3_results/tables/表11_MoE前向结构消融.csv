@@ -1,0 +1,9 @@
+arm,validation_NRMSE,role
+H0,0.3278,global
+MoE_K1,0.33042,one_expert
+MoE_K2,0.20846,moe
+MoE_K4,0.20355,selected_moe
+MoE_K8,0.20396,moe
+FreeMLP,0.20109,free_gain
+MoE_dir,0.20449,direction_free
+Z_zero,NaN,sentinel

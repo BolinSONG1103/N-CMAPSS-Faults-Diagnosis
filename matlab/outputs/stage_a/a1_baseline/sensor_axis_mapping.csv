@@ -1,0 +1,14 @@
+sensor_index,corrected_channel
+1,Nf_c
+2,Nc_c
+3,Wf_c
+4,T24_c
+5,T30_c
+6,T48_c
+7,T50_c
+8,P15_c
+9,P21_c
+10,P24_c
+11,Ps30_c
+12,P40_c
+13,P50_c

@@ -1,0 +1,18 @@
+{
+  "stage": "A",
+  "overall_pass": true,
+  "a1_isolated_dependency": true,
+  "a2_t0_pass": true,
+  "q2_formal_unchanged": true,
+  "q2_shrinkage_supported": true,
+  "e3_formal_unchanged": true,
+  "e3_old_severity_explanation_rejected": true,
+  "figure_sets": 12,
+  "figure_formats": [
+    "png",
+    "pdf",
+    "svg"
+  ],
+  "minimum_png_dpi": 599.9988,
+  "stage_B_authorization_received": false
+}

@@ -1,0 +1,73 @@
+====================================================================================================
+T1 MATLAB：工况自适应 H(w)，FAST_MODE=0
+====================================================================================================
+预注册：Q1>=5%；Q2s占优率>=95%且中位gap>=0.01；Q3<0.01；Q4容差0.005。
+  使用 MATLAB 管线缓存: C:\Users\25691\Desktop\thesis_part3\matlab\cache\pipeline_cache_exact.mat
+cond(H_n)=1562.791820
+训练池 N-CMAPSS_DS01-005.h5      150000 行
+训练池 N-CMAPSS_DS04.h5          150000 行
+训练池 N-CMAPSS_DS05.h5          150000 行
+训练池 N-CMAPSS_DS07.h5          150000 行
+训练池 N-CMAPSS_DS06.h5          150000 行
+门控训练/验证：230252/69748 行，按发动机切分。
+    [H0        ] 无需训练，val NRMSE=0.32780
+    [MoE_K1    ] epoch   1/ 30  val NRMSE=0.33109
+    [MoE_K1    ] epoch   6/ 30  val NRMSE=0.33157
+    [MoE_K1    ] epoch  12/ 30  val NRMSE=0.33137
+    [MoE_K1    ] epoch  18/ 30  val NRMSE=0.33059
+    [MoE_K1    ] epoch  24/ 30  val NRMSE=0.33076
+    [MoE_K1    ] epoch  30/ 30  val NRMSE=0.33091
+    [MoE_K1    ] best val NRMSE=0.33042
+    [MoE_K2    ] epoch   1/ 30  val NRMSE=0.29982
+    [MoE_K2    ] epoch   6/ 30  val NRMSE=0.22576
+    [MoE_K2    ] epoch  12/ 30  val NRMSE=0.21338
+    [MoE_K2    ] epoch  18/ 30  val NRMSE=0.20975
+    [MoE_K2    ] epoch  24/ 30  val NRMSE=0.21111
+    [MoE_K2    ] epoch  30/ 30  val NRMSE=0.20846
+    [MoE_K2    ] best val NRMSE=0.20846
+    [MoE_K4    ] epoch   1/ 30  val NRMSE=0.29808
+    [MoE_K4    ] epoch   6/ 30  val NRMSE=0.21940
+    [MoE_K4    ] epoch  12/ 30  val NRMSE=0.20891
+    [MoE_K4    ] epoch  18/ 30  val NRMSE=0.20665
+    [MoE_K4    ] epoch  24/ 30  val NRMSE=0.20559
+    [MoE_K4    ] epoch  30/ 30  val NRMSE=0.20541
+    [MoE_K4    ] best val NRMSE=0.20355
+    [MoE_K8    ] epoch   1/ 30  val NRMSE=0.29760
+    [MoE_K8    ] epoch   6/ 30  val NRMSE=0.21108
+    [MoE_K8    ] epoch  12/ 30  val NRMSE=0.20606
+    [MoE_K8    ] epoch  18/ 30  val NRMSE=0.20396
+    [MoE_K8    ] epoch  24/ 30  val NRMSE=0.20598
+    [MoE_K8    ] epoch  30/ 30  val NRMSE=0.20726
+    [MoE_K8    ] best val NRMSE=0.20396
+    [FreeMLP   ] epoch   1/ 30  val NRMSE=0.20747
+    [FreeMLP   ] epoch   6/ 30  val NRMSE=0.20669
+    [FreeMLP   ] epoch  12/ 30  val NRMSE=0.20931
+    [FreeMLP   ] epoch  18/ 30  val NRMSE=0.20557
+    [FreeMLP   ] epoch  24/ 30  val NRMSE=0.20580
+    [FreeMLP   ] epoch  30/ 30  val NRMSE=0.20594
+    [FreeMLP   ] best val NRMSE=0.20109
+    [MoE_dir   ] epoch   1/ 30  val NRMSE=0.29703
+    [MoE_dir   ] epoch   6/ 30  val NRMSE=0.21897
+    [MoE_dir   ] epoch  12/ 30  val NRMSE=0.20816
+    [MoE_dir   ] epoch  18/ 30  val NRMSE=0.20497
+    [MoE_dir   ] epoch  24/ 30  val NRMSE=0.20696
+    [MoE_dir   ] epoch  30/ 30  val NRMSE=0.20492
+    [MoE_dir   ] best val NRMSE=0.20449
+MoE_dir: ||dH||/||H0||=0.003696，最差方向余弦=0.999913
+TRA4 fan_flow: 0.513 -> 1.193；LPT_eff: 0.667 -> 1.163
+
+DS02 test units=[11 14 15]
+  unit 11 完成
+  unit 14 完成
+  unit 15 完成
+
+DS03 test units=[10 11 12 13 14 15]
+  unit 10 完成
+  unit 11 完成
+  unit 12 完成
+  unit 13 完成
+  unit 14 完成
+  unit 15 完成
+
+Q1=1 (gain 0.379), Q2s=0 (rate 62.5%, median 0.0031), Q3=1, Q4=1
+highTRA 回退率 0.000%；T1 core_pass=0

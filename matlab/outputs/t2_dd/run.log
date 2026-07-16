@@ -1,0 +1,27 @@
+====================================================================================================
+T2 MATLAB：数据驱动对照 × 组合外推，FAST_MODE=0
+====================================================================================================
+预注册：E1 最佳数据驱动>=D-0.05；E2 DS02/03 D逐臂全胜；E3 非线性落差>D+0.05。
+  使用 MATLAB 管线缓存: C:\Users\25691\Desktop\thesis_part3\matlab\cache\pipeline_cache_exact.mat
+N-CMAPSS_DS01-005.h5      训练6台 / 留出0台
+N-CMAPSS_DS04.h5          训练6台 / 留出0台
+N-CMAPSS_DS05.h5          训练4台 / 留出2台
+N-CMAPSS_DS07.h5          训练4台 / 留出2台
+N-CMAPSS_DS06.h5          训练6台 / 留出0台
+按发动机切分：训练21台，验证5台。
+    [E_MLP       ] epoch   1/ 40  val MSE=0.752762
+    [E_MLP       ] epoch  10/ 40  val MSE=0.083890
+    [E_MLP       ] epoch  20/ 40  val MSE=0.039159
+    [E_MLP       ] epoch  30/ 40  val MSE=0.029752
+    [E_MLP       ] epoch  40/ 40  val MSE=0.020678
+    [E_WPMixer   ] epoch   1/ 40  val MSE=5.759344
+    [E_WPMixer   ] epoch  10/ 40  val MSE=1.014233
+    [E_WPMixer   ] epoch  20/ 40  val MSE=0.657187
+    [E_WPMixer   ] epoch  30/ 40  val MSE=0.552275
+    [E_WPMixer   ] epoch  40/ 40  val MSE=0.435292
+    E_Lin        参数量=126
+    E_MLP        参数量=5641
+    E_MixLinear  参数量=1881
+    E_WPMixer    参数量=13961
+
+E1=1，E2=1，E3=0，E1重试=1

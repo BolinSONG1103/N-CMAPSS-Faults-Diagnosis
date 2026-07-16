@@ -1,0 +1,13 @@
+{
+  "stage": "A2",
+  "subset": "DS03",
+  "N": 1000,
+  "raw_scan_lambda": 31.622776601683793,
+  "matlab_lambda": 31.6,
+  "raw_scan_aggregate_X": 0.95706489526733651,
+  "matlab_recompute_Y": 0.957563972105055,
+  "absolute_difference": 0.00049907683771843736,
+  "tolerance": 0.005,
+  "pass": true,
+  "formal_T0_judgement_unchanged": true
+}
