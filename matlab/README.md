@@ -29,7 +29,7 @@ run_24_family_diagnosis
 
 `run_23_repeated_splits` 会对五个 unit 划分重新拟合健康基准和 H，计算量最大，应在单次正式闭环与图表验证通过后运行。它不能用只重复决策阈值的方式替代，因为划分不确定性必须传播到健康基准、H、lambda 和诊断输出。程序默认将 lambda 路径、持续性选择、阶段敏感性和未知故障折汇总到 `outputs/t6_repeated_splits/`，全部写入成功后删除四个可再生 seed 中间目录；调试时可调用 `experiment_23_repeated_splits(true)` 保留中间目录。
 
-`run_24_family_diagnosis` 读取主划分已经锁定的连续反演模型，按运行前冻结的 HPT/Fan/HPC/LPT/LPC 映射建立五部件族多标签诊断；协议见 `../docs/部件族诊断补充协议.md`。该实验只修正离散诊断目标层级，不覆盖九维参数级结果。
+`run_24_family_diagnosis` 直接读取主划分已经锁定的 `diagnostic_cycle_raw.csv`，按运行前冻结的 HPT/Fan/HPC/LPT/LPC 映射合并参数标签；协议见 `../docs/部件族诊断补充协议.md`。该实验不依赖 `cache/`，不重新反演或选参，只修正离散诊断目标层级，并逐发动机验证检测指标与 v2 完全一致。
 
 建议先运行单元测试：
 

@@ -14,22 +14,12 @@ verifyEqual(testCase,y(:,2),logical([0;1;1;1]));
 verifyFalse(testCase,any(y(:,[1 3 4 5]),'all'));
 end
 
-function testCalibrationOnlyFamilyDecision(testCase)
-T=50; seqs=cell(1,4);
-for i=1:4
-    theta=zeros(T,9); theta(16:end,2)=-linspace(.002,.5,T-15).';
-    theta(16:end,3)=-linspace(.001,.3,T-15).';
-    hs=true(T,1); hs(16:end)=false;
-    seqs{i}=struct('theta_hat',theta,'theta_true',theta,'hs',hs,'fault_idx',[2 3]);
-end
-base=struct('DECISION_ALPHA',.01,'UNKNOWN_ALPHA',.01, ...
-    'PERSISTENCE_GRID',[1 2 3 5],'STAGE_COMPONENTS',3,'SEED',42);
-cfg=chapter3_diagnostic_lib.config(base); model=chapter3_family_lib.fit(seqs,cfg);
-p=chapter3_family_lib.predict(seqs{1}.theta_hat,model);
-y=struct('family_label',chapter3_family_lib.truth_labels( ...
-    seqs{1}.hs,seqs{1}.fault_idx,T),'fault',~seqs{1}.hs);
-m=chapter3_family_lib.sequence_metrics(p,y,(1:T).');
-verifyGreaterThan(testCase,m.family_macroF1,.9);
-verifyEqual(testCase,nnz(model.persistence_selection.selected),1);
-verifyEqual(testCase,m.unit_false_alarm,0);
+function testLockedLabelAggregationPreservesDetection(testCase)
+parameterLabels=false(6,9);
+parameterLabels(3:end,2)=true; parameterLabels(5:end,7)=true;
+familyLabels=chapter3_family_lib.aggregate_labels(parameterLabels);
+verifyEqual(testCase,familyLabels(:,2),parameterLabels(:,2));
+verifyEqual(testCase,familyLabels(:,4),parameterLabels(:,7));
+verifyEqual(testCase,any(familyLabels,2),any(parameterLabels,2));
+verifyFalse(testCase,any(familyLabels(:,[1 3 5]),'all'));
 end

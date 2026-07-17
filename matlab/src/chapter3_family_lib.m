@@ -29,61 +29,13 @@ classdef chapter3_family_lib
             end
         end
 
-        function model=fit(seqs,cfg)
-            healthy=zeros(0,5);
-            for i=1:numel(seqs)
-                s=seqs{i}; z=chapter3_family_lib.severity(s.theta_hat);
-                h=z(logical(s.hs),:);
-                if size(h,1)>cfg.threshold_samples_per_unit
-                    pick=round(linspace(1,size(h,1),cfg.threshold_samples_per_unit));
-                    h=h(pick,:);
-                end
-                healthy=[healthy;h]; %#ok<AGROW>
+        function labels=aggregate_labels(parameterLabels)
+            groups=chapter3_family_lib.groups();
+            assert(size(parameterLabels,2)==9,'标签聚合要求九维参数标签。');
+            labels=false(size(parameterLabels,1),numel(groups));
+            for g=1:numel(groups)
+                labels(:,g)=any(logical(parameterLabels(:,groups{g})),2);
             end
-            assert(~isempty(healthy),'calibration 中没有健康周期。');
-            tau=zeros(1,5);
-            for g=1:5, tau(g)=prctile(healthy(:,g),100*(1-cfg.alpha)); end
-            [bestK,selection]=chapter3_family_lib.select_persistence(seqs,tau,cfg);
-            model=struct('family_names',chapter3_family_lib.names(), ...
-                'family_groups',{chapter3_family_lib.groups()}, ...
-                'family_threshold',tau,'persistence',bestK, ...
-                'persistence_selection',selection,'alpha',cfg.alpha, ...
-                'fit_units',numel(seqs),'severity_definition','RMS_of_normalized_parameters');
-        end
-
-        function [bestK,selection]=select_persistence(seqs,tau,cfg)
-            grid=cfg.persistence_grid(:); far=zeros(numel(grid),1); macroF1=far;
-            for ik=1:numel(grid)
-                unitFar=zeros(numel(seqs),1); unitF1=unitFar;
-                for i=1:numel(seqs)
-                    s=seqs{i}; p=chapter3_diagnostic_lib.threshold_labels( ...
-                        chapter3_family_lib.severity(s.theta_hat),tau,grid(ik));
-                    y=chapter3_family_lib.truth_labels(s.hs,s.fault_idx,size(p,1));
-                    h=logical(s.hs);
-                    if any(h), unitFar(i)=mean(any(p(h,:),2)); end
-                    unitF1(i)=chapter3_diagnostic_lib.macro_f1(p,y);
-                end
-                far(ik)=mean(unitFar); macroF1(ik)=mean(unitF1);
-            end
-            feasible=far<=cfg.max_calibration_far;
-            if any(feasible)
-                candidates=find(feasible); target=max(macroF1(candidates));
-                candidates=candidates(abs(macroF1(candidates)-target)<1e-12);
-            else
-                target=min(far); candidates=find(abs(far-target)<1e-12);
-                target=max(macroF1(candidates));
-                candidates=candidates(abs(macroF1(candidates)-target)<1e-12);
-            end
-            [~,ii]=max(grid(candidates)); pick=candidates(ii); bestK=grid(pick);
-            selection=table(grid,far,macroF1,grid==bestK,'VariableNames', ...
-                {'K','unit_balanced_FAR','unit_balanced_macroF1','selected'});
-        end
-
-        function out=predict(thetaHat,model)
-            severity=chapter3_family_lib.severity(thetaHat);
-            labels=chapter3_diagnostic_lib.threshold_labels( ...
-                severity,model.family_threshold,model.persistence);
-            out=struct('severity',severity,'family_label',labels,'fault',any(labels,2));
         end
 
         function m=sequence_metrics(pred,truth,cycles)

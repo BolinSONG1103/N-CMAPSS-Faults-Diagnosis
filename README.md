@@ -43,6 +43,6 @@ run_24_family_diagnosis
 
 `run_23_repeated_splits` 默认在所有跨划分表写入成功后删除四个可再生 seed 中间目录，只保留 `t6_repeated_splits` 汇总；如需调试，可直接调用 `experiment_23_repeated_splits(true)` 保留中间目录。
 
-`run_24_family_diagnosis` 是依据 `docs/部件族诊断补充协议.md` 冻结的独立补充实验：保留九维连续估计，将离散隔离目标映射为 HPT、Fan、HPC、LPT、LPC 五个物理部件族。它不覆盖 v2 结果，也不改变阶段和未知故障协议。
+`run_24_family_diagnosis` 是依据 `docs/部件族诊断补充协议.md` 冻结的独立补充实验：直接读取 v2 正式 CSV，把锁定的九参数标签映射为 HPT、Fan、HPC、LPT、LPC 五个物理部件族。它不依赖缓存、不重新选参、不覆盖 v2 结果，也不改变检测、阶段和未知故障协议。
 
 需要复核既有连续反演阶段时，仍可使用 `run_t0_acceptance`、`run_19b`、`run_20`、`run_tau_check` 和阶段 A 入口，但其输出不得覆盖闭环 v2 的正式结果。
