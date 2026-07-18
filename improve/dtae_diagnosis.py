@@ -1,105 +1,126 @@
-"""基于 DTAE 的气路故障诊断（分布内 cycle 级协议，参考王昆博士论文第3章）。
+"""基于 DTAE 的气路故障诊断（分布内、多标签五部件族、两阶段）——参考王昆博士论文第3章。
 
-协议（对应"对已知机队的在线诊断"，与王昆同机连续架次一致）：
-  - 池化辨识/分布内 dev 发动机（每台单一故障族）的逐循环残差 R；
-  - 每台发动机按循环分层 70/30 划分 train/test（同机、循环不重叠）；
-  - 6 类单标签：正常 + HPT/Fan/HPC/LPT/LPC；
-  - DTAE 联合重构+分类，加噪掩码增强；测试报告检测与隔离指标。
-本协议评估对监视中发动机的诊断能力，不评估跨新发动机泛化（后者见连续估计闭环）。
+协议（"对已知机队的在线诊断"，与王昆同机连续架次同 scope；不评估跨新发动机泛化）：
+  - 特征：标准化气路残差 R（13）+ 多尺度时序（滚动均值/退化斜率）+ 连续估计部件严重度 θ̂
+    及其时序斜率（物理特征，利用退化时间动态突破部件线性共线）；
+  - 网络：双任务自编码器（重构+分类联合，加噪+掩码增强），numpy 实现见 dtae.py；
+  - 标签：五部件族多标签（HPT/Fan/HPC/LPT/LPC；允许多族同时退化，如 DS06=HPC+LPC）；
+  - 划分：池化 dev 发动机逐循环，每台按循环 70/30；报告 5 个随机划分种子聚合结果；
+  - 两阶段：先检测（任一族 + 持续 K 循环）再对故障样本隔离，与王昆一致。
+指标：事件级检测率、首次检测延迟、健康期虚警；隔离逐族 P/R/F1、macro/micro-F1、混淆。
 """
 import os
 import numpy as np
 import pandas as pd
-
 import closure_lib as C
 from dtae import DTAE
 
 FAMS = ["HPT", "Fan", "HPC", "LPT", "LPC"]
-CLASSES = ["正常"] + FAMS
-FAM_OF_PARAM = {0: 1, 1: 2, 2: 2, 3: 3, 4: 3, 5: 4, 6: 4, 7: 5, 8: 5}  # ->类别(1..5)
+FAM_OF = {0: 0, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4}
+DIAG_SEV = 0.05        # 预注册：真值量程归一化严重度 > 0.05 视为物理可观测退化
+PERSIST = 3            # 检测持续循环数
+SEEDS = range(5)
+OUT = os.path.dirname(__file__)
 
 
 def features(s):
-    R = s["R"]
-    sm = pd.DataFrame(R).rolling(3, min_periods=1).mean().values     # 轻时序
-    return np.hstack([R, sm])
+    R = s["R"]; df = pd.DataFrame(R)
+    m5 = df.rolling(5, min_periods=1).mean().values
+    m10 = df.rolling(10, min_periods=1).mean().values
+    slope = (df - df.shift(8)).fillna(0).values
+    sev = np.maximum(0, -s["theta_hat"])
+    sdf = pd.DataFrame(sev); ssl = (sdf - sdf.shift(8)).fillna(0).values
+    return np.hstack([R, m5, m10, slope, sev, ssl])
 
 
-def cycle_label(s):
-    """逐循环 6 类单标签（dev 单元每台单一故障族）。"""
-    y = np.zeros(len(s["cycles"]), int)
-    fam = FAM_OF_PARAM[int(s["fault_idx"][0])] if len(s["fault_idx"]) else 0
-    y[~s["hs"]] = fam
-    return y
-
-
-def build_dataset(seed=0):
-    data = C.load_sequences(lam=0.01)
-    dev = data["calRaw"] + data["idRaw"]      # 10 台 dev 发动机（每台单故障族）
-    rng = np.random.RandomState(seed)
-    Xtr, ytr, Xte, yte, ute = [], [], [], [], []
-    for k, s in enumerate(dev):
-        X = features(s); y = cycle_label(s); n = len(y)
-        idx = rng.permutation(n); cut = int(0.7 * n)
-        tr, te = idx[:cut], idx[cut:]
-        Xtr.append(X[tr]); ytr.append(y[tr])
-        Xte.append(X[te]); yte.append(y[te]); ute.append(np.full(len(te), k))
-    return (np.vstack(Xtr), np.concatenate(ytr),
-            np.vstack(Xte), np.concatenate(yte), np.concatenate(ute))
-
-
-def onehot(y, k=6):
-    Y = np.zeros((len(y), k)); Y[np.arange(len(y)), y] = 1
+def fam_multi(s):
+    T = len(s["cycles"]); Y = np.zeros((T, 5), bool)
+    for j in s["fault_idx"]:
+        Y[~s["hs"], FAM_OF[int(j)]] = True
     return Y
 
 
-def confusion(yt, yp, k=6):
-    M = np.zeros((k, k), int)
-    for a, b in zip(yt, yp):
-        M[a, b] += 1
-    return M
+def fam_sev(s):
+    st = np.maximum(0, -s["theta_true"]); S = np.zeros((st.shape[0], 5))
+    for j in range(9):
+        S[:, FAM_OF[j]] = np.maximum(S[:, FAM_OF[j]], st[:, j])
+    return S
 
 
-def metrics(yt, yp):
-    det_t = yt > 0; det_p = yp > 0
-    tp = np.sum(det_p & det_t); tn = np.sum(~det_p & ~det_t)
-    fp = np.sum(det_p & ~det_t); fn = np.sum(~det_p & det_t)
-    FAR = fp / max(fp + tn, 1); DR = tp / max(tp + fn, 1)
-    prec = tp / max(tp + fp, 1); detF1 = 2 * prec * DR / max(prec + DR, 1e-9)
-    f1s = []
-    for c in range(1, 6):
-        t = yt == c; p = yp == c
-        if t.any() or p.any():
-            tpc = np.sum(p & t); fpc = np.sum(p & ~t); fnc = np.sum(~p & t)
-            pr = tpc / max(tpc + fpc, 1); rc = tpc / max(tpc + fnc, 1)
-            f1s.append(2 * pr * rc / max(pr + rc, 1e-9))
-    return dict(FAR=FAR, DR=DR, detF1=detF1, macroF1=float(np.mean(f1s)),
-                acc=np.mean(yt == yp))
-
-
-def run(seed=0, verbose=True):
-    Xtr, ytr, Xte, yte, ute = build_dataset(seed)
+def train_split(seed):
+    data = C.load_sequences(lam=0.01); dev = data["calRaw"] + data["idRaw"]
+    rng = np.random.RandomState(seed)
+    Xtr, Ytr, te = [], [], []
+    for s in dev:
+        X = features(s); Y = fam_multi(s); n = X.shape[0]
+        idx = rng.permutation(n); cut = int(0.7 * n)
+        Xtr.append(X[idx[:cut]]); Ytr.append(Y[idx[:cut]])
+        te.append((s, X, Y, fam_sev(s), np.sort(idx[cut:])))
+    Xtr = np.vstack(Xtr); Ytr = np.vstack(Ytr).astype(float)
     mu = Xtr.mean(0); sd = Xtr.std(0) + 1e-8
-    Xtr = (Xtr - mu) / sd; Xte = (Xte - mu) / sd
-    net = DTAE(Xtr.shape[1], d_latent=12, n_class=6, lambda_cls=2.0,
-               noise=0.3, mask=0.1, lr=3e-3, epochs=400, batch=128, seed=seed)
-    net.fit(Xtr, onehot(ytr))
-    proba = net.predict_proba(Xte); yp = np.argmax(proba, axis=1)
-    m = metrics(yte, yp); M = confusion(yte, yp)
-    if verbose:
-        print(f"[seed {seed}] 检测 FAR={m['FAR']:.3f} DR={m['DR']:.3f} F1={m['detF1']:.3f} "
-              f"| 隔离 macroF1={m['macroF1']:.3f} 六类acc={m['acc']:.3f}")
-    return dict(net=net, mu=mu, sd=sd, Xte=Xte, yte=yte, yp=yp, ute=ute,
-                metrics=m, confusion=M)
+    net = DTAE((Xtr - mu).shape[1], 20, 5, lambda_cls=3.0, noise=0.25, mask=0.1,
+               lr=3e-3, epochs=600, batch=128, seed=seed).fit((Xtr - mu) / sd, Ytr)
+    return net, mu, sd, te
+
+
+def evaluate(collect_confusion=False):
+    tp = np.zeros(5); fp = np.zeros(5); fn = np.zeros(5)
+    evDR = []; delays = []; far_cyc = []
+    conf = np.zeros((5, 5))         # 隔离共现：真值族 × 预测族（故障可观测样本）
+    latent_Z = []; latent_y = []
+    for seed in SEEDS:
+        net, mu, sd, te = train_split(seed)
+        for (s, X, Y, S, idx) in te:
+            Xte = (X[idx] - mu) / sd
+            P = net.predict(Xte); Yt = Y[idx]; St = S[idx]; hs = s["hs"][idx]
+            fault = ~hs
+            # 两阶段检测：任一族持续 PERSIST
+            det = P.any(1).astype(int); run = 0; first = None
+            for t in range(len(det)):
+                run = run + 1 if det[t] else 0
+                if run >= PERSIST and first is None:
+                    first = t
+            if fault.any():
+                evDR.append(1.0 if first is not None else 0.0)
+            if hs.any():
+                far_cyc.append(np.mean(P[hs].any(1)))
+            # 隔离：故障且可观测样本上逐族
+            for g in range(5):
+                obs = fault & (St[:, g] > DIAG_SEV)   # 该族真实退化且可观测
+                # 负样本 = 其它族可观测退化的故障样本（隔离难点=族间区分）
+                other = fault & (~obs) & (St.max(1) > DIAG_SEV)
+                t_pos = P[obs, g]; t_neg = P[other, g]
+                tp[g] += np.sum(t_pos); fn[g] += np.sum(~t_pos); fp[g] += np.sum(t_neg)
+            if collect_confusion:
+                diag = fault & (St.max(1) > DIAG_SEV)
+                for i in np.where(diag)[0]:
+                    truth_fams = np.where(Yt[i])[0]
+                    pred_fams = np.where(P[i])[0]
+                    for a in truth_fams:
+                        if len(pred_fams):
+                            for b in pred_fams:
+                                conf[a, b] += 1 / len(pred_fams)
+                        else:
+                            conf[a, a] += 0
+                latent_Z.append(net.encode(Xte[diag])); latent_y.append(Yt[diag])
+    f1 = np.array([2 * tp[g] / max(2 * tp[g] + fp[g] + fn[g], 1) for g in range(5)])
+    prec = np.array([tp[g] / max(tp[g] + fp[g], 1) for g in range(5)])
+    rec = np.array([tp[g] / max(tp[g] + fn[g], 1) for g in range(5)])
+    res = dict(event_DR=np.mean(evDR), healthy_far=np.mean(far_cyc),
+               f1=f1, precision=prec, recall=rec, macro_f1=float(f1.mean()),
+               micro_f1=2 * tp.sum() / max(2 * tp.sum() + fp.sum() + fn.sum(), 1))
+    if collect_confusion:
+        res["confusion"] = conf
+        res["Z"] = np.vstack(latent_Z); res["y"] = np.vstack(latent_y)
+    return res
 
 
 if __name__ == "__main__":
-    accs = []
-    for sd in range(5):
-        r = run(sd)
-        accs.append([r["metrics"]["FAR"], r["metrics"]["DR"], r["metrics"]["detF1"],
-                     r["metrics"]["macroF1"]])
-    a = np.array(accs)
-    print("\n5 seed 均值±std: FAR=%.3f±%.3f DR=%.3f±%.3f detF1=%.3f±%.3f macroF1=%.3f±%.3f"
-          % (a[:, 0].mean(), a[:, 0].std(), a[:, 1].mean(), a[:, 1].std(),
-             a[:, 2].mean(), a[:, 2].std(), a[:, 3].mean(), a[:, 3].std()))
+    r = evaluate()
+    print(f"事件级检测率 = {r['event_DR']:.3f}   健康期虚警(cycle) = {r['healthy_far']:.3f}")
+    for g in range(5):
+        print(f"  {FAMS[g]:4}  P={r['precision'][g]:.3f} R={r['recall'][g]:.3f} F1={r['f1'][g]:.3f}")
+    print(f"  >>> macro-F1 = {r['macro_f1']:.3f}   micro-F1 = {r['micro_f1']:.3f}")
+    pd.DataFrame(dict(family=FAMS, precision=r["precision"], recall=r["recall"],
+                      F1=r["f1"])).to_csv(os.path.join(OUT, "dtae_isolation_metrics.csv"),
+                                          index=False)
