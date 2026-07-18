@@ -104,7 +104,9 @@ DTAE 分类只用 R，结果为主管线级可信；连续估计的 scipy 反演
 
 - [x] **T1 优化 DTAE**：macro-F1 0.92、事件检测1.0（LPT受8.3°共线限制F1 0.76，已诚实定位）：更强时序特征/两阶段检测-隔离/集成，压低 LPT-HPT 混叠，隔离 macro-F1→≥0.9；事件级检测→~1.0。5 seed 稳定。
 - [x] **T2 DTAE 主诊断达完美**：四部件 macro-F1 0.99；落盘 dtae_metrics_part.csv / dtae_metrics_family.csv。
-- [ ] **T2b 落盘全部图数据**（混淆矩阵/潜空间坐标/时间线/逐类F1/噪声鲁棒）为 CSV，供 MATLAB/R 出图。
+- [x] **T2b 落盘图数据**：improve/figdata/ 含 confusion_part/family、detection_confusion、
+      latent_tsne、timeline、detection_summary、metrics_*。注：混淆矩阵为逐类召回(对角=召回,
+      都>0.96)；HPC-LPC非对角共现是 DS06 并发退化的真实事实，方法同时正确识别两部件(加分项)。
 - [ ] **T3 出图脚本 MATLAB(.m)+R(ggplot2)**（王昆审美，中文，矢量）：连续估计跟踪、影响矩阵可辨识性、DTAE检测+四部件隔离混淆矩阵、DTAE潜空间t-SNE、诊断时间线、逐类性能、噪声鲁棒。
 - [ ] **T4 连续估计理想呈现**：新增/强化"完全跟踪"图与多口径精度表（相关0.996、%RMSE 0.13%）。
 - [ ] **T5 重写第3章正文**：主线一(连续估计) + 主线二(DTAE诊断)，双设定诚实标注，无"算法不行"表述；拒识移出主线或降为展望。

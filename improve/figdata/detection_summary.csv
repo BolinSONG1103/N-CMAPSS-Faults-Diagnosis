@@ -1,0 +1,5 @@
+﻿metric,value
+event_detection_rate,1.0
+healthy_cycle_far,0.14134487734487736
+macro_f1,0.9896062936095616
+micro_f1,0.9915848527349228
