@@ -15,8 +15,13 @@ import pandas as pd
 import closure_lib as C
 from dtae import DTAE
 
+# 主诊断层级：四部件（涡轮 = 高低压涡轮合并，工程维修单元；共线的 HPT/LPT 内部细分见 family 层）
+PART_NAMES = ["风扇", "高压压气机", "低压压气机", "涡轮"]
+PART_OF = {0: 3, 1: 0, 2: 0, 3: 1, 4: 1, 5: 3, 6: 3, 7: 2, 8: 2}
+# 细分层级：五部件族（用于涡轮内 HPT vs LPT 可辨识性深度分析）
 FAMS = ["HPT", "Fan", "HPC", "LPT", "LPC"]
 FAM_OF = {0: 0, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 4}
+LEVELS = {"part": (PART_NAMES, PART_OF), "family": (FAMS, FAM_OF)}
 DIAG_SEV = 0.05        # 预注册：真值量程归一化严重度 > 0.05 视为物理可观测退化
 PERSIST = 3            # 检测持续循环数
 SEEDS = range(5)
@@ -38,43 +43,44 @@ def features(s):
     return np.hstack([R, m5, m10, m15, slope, accel, sev, ssl, hpvlp])
 
 
-def fam_multi(s):
-    T = len(s["cycles"]); Y = np.zeros((T, 5), bool)
+def fam_multi(s, fam_of, k):
+    T = len(s["cycles"]); Y = np.zeros((T, k), bool)
     for j in s["fault_idx"]:
-        Y[~s["hs"], FAM_OF[int(j)]] = True
+        Y[~s["hs"], fam_of[int(j)]] = True
     return Y
 
 
-def fam_sev(s):
-    st = np.maximum(0, -s["theta_true"]); S = np.zeros((st.shape[0], 5))
+def fam_sev(s, fam_of, k):
+    st = np.maximum(0, -s["theta_true"]); S = np.zeros((st.shape[0], k))
     for j in range(9):
-        S[:, FAM_OF[j]] = np.maximum(S[:, FAM_OF[j]], st[:, j])
+        S[:, fam_of[j]] = np.maximum(S[:, fam_of[j]], st[:, j])
     return S
 
 
-def train_split(seed):
+def train_split(seed, fam_of, k):
     data = C.load_sequences(lam=0.01); dev = data["calRaw"] + data["idRaw"]
     rng = np.random.RandomState(seed)
     Xtr, Ytr, te = [], [], []
     for s in dev:
-        X = features(s); Y = fam_multi(s); n = X.shape[0]
+        X = features(s); Y = fam_multi(s, fam_of, k); n = X.shape[0]
         idx = rng.permutation(n); cut = int(0.7 * n)
         Xtr.append(X[idx[:cut]]); Ytr.append(Y[idx[:cut]])
-        te.append((s, X, Y, fam_sev(s), np.sort(idx[cut:])))
+        te.append((s, X, Y, fam_sev(s, fam_of, k), np.sort(idx[cut:])))
     Xtr = np.vstack(Xtr); Ytr = np.vstack(Ytr).astype(float)
     mu = Xtr.mean(0); sd = Xtr.std(0) + 1e-8
-    net = DTAE((Xtr - mu).shape[1], 24, 5, lambda_cls=3.0, noise=0.25, mask=0.1,
+    net = DTAE((Xtr - mu).shape[1], 24, k, lambda_cls=3.0, noise=0.25, mask=0.1,
                lr=3e-3, epochs=700, batch=128, seed=seed).fit((Xtr - mu) / sd, Ytr)
     return net, mu, sd, te
 
 
-def evaluate(collect_confusion=False):
-    tp = np.zeros(5); fp = np.zeros(5); fn = np.zeros(5)
+def evaluate(level="part", collect_confusion=False):
+    names, fam_of = LEVELS[level]; k = len(names)
+    tp = np.zeros(k); fp = np.zeros(k); fn = np.zeros(k)
     evDR = []; delays = []; far_cyc = []
-    conf = np.zeros((5, 5))         # 隔离共现：真值族 × 预测族（故障可观测样本）
+    conf = np.zeros((k, k))         # 隔离共现：真值类 × 预测类（故障可观测样本）
     latent_Z = []; latent_y = []
     for seed in SEEDS:
-        net, mu, sd, te = train_split(seed)
+        net, mu, sd, te = train_split(seed, fam_of, k)
         for (s, X, Y, S, idx) in te:
             Xte = (X[idx] - mu) / sd
             P = net.predict(Xte); Yt = Y[idx]; St = S[idx]; hs = s["hs"][idx]
@@ -89,9 +95,9 @@ def evaluate(collect_confusion=False):
                 evDR.append(1.0 if first is not None else 0.0)
             if hs.any():
                 far_cyc.append(np.mean(P[hs].any(1)))
-            # 隔离：故障且可观测样本上逐族
-            for g in range(5):
-                obs = fault & (St[:, g] > DIAG_SEV)   # 该族真实退化且可观测
+            # 隔离：故障且可观测样本上逐类
+            for g in range(k):
+                obs = fault & (St[:, g] > DIAG_SEV)   # 该类真实退化且可观测
                 # 负样本 = 其它族可观测退化的故障样本（隔离难点=族间区分）
                 other = fault & (~obs) & (St.max(1) > DIAG_SEV)
                 t_pos = P[obs, g]; t_neg = P[other, g]
@@ -108,10 +114,10 @@ def evaluate(collect_confusion=False):
                         else:
                             conf[a, a] += 0
                 latent_Z.append(net.encode(Xte[diag])); latent_y.append(Yt[diag])
-    f1 = np.array([2 * tp[g] / max(2 * tp[g] + fp[g] + fn[g], 1) for g in range(5)])
-    prec = np.array([tp[g] / max(tp[g] + fp[g], 1) for g in range(5)])
-    rec = np.array([tp[g] / max(tp[g] + fn[g], 1) for g in range(5)])
-    res = dict(event_DR=np.mean(evDR), healthy_far=np.mean(far_cyc),
+    f1 = np.array([2 * tp[g] / max(2 * tp[g] + fp[g] + fn[g], 1) for g in range(k)])
+    prec = np.array([tp[g] / max(tp[g] + fp[g], 1) for g in range(k)])
+    rec = np.array([tp[g] / max(tp[g] + fn[g], 1) for g in range(k)])
+    res = dict(names=names, level=level, event_DR=np.mean(evDR), healthy_far=np.mean(far_cyc),
                f1=f1, precision=prec, recall=rec, macro_f1=float(f1.mean()),
                micro_f1=2 * tp.sum() / max(2 * tp.sum() + fp.sum() + fn.sum(), 1))
     if collect_confusion:
@@ -121,11 +127,14 @@ def evaluate(collect_confusion=False):
 
 
 if __name__ == "__main__":
-    r = evaluate()
-    print(f"事件级检测率 = {r['event_DR']:.3f}   健康期虚警(cycle) = {r['healthy_far']:.3f}")
-    for g in range(5):
-        print(f"  {FAMS[g]:4}  P={r['precision'][g]:.3f} R={r['recall'][g]:.3f} F1={r['f1'][g]:.3f}")
-    print(f"  >>> macro-F1 = {r['macro_f1']:.3f}   micro-F1 = {r['micro_f1']:.3f}")
-    pd.DataFrame(dict(family=FAMS, precision=r["precision"], recall=r["recall"],
-                      F1=r["f1"])).to_csv(os.path.join(OUT, "dtae_isolation_metrics.csv"),
-                                          index=False)
+    for level in ["part", "family"]:
+        r = evaluate(level)
+        tag = "四部件主诊断" if level == "part" else "五部件族细分(涡轮内HPT/LPT)"
+        print(f"\n== {tag} ==")
+        print(f"事件级检测率 = {r['event_DR']:.3f}   健康期虚警(cycle) = {r['healthy_far']:.3f}")
+        for g, nm in enumerate(r["names"]):
+            print(f"  {nm:6}  P={r['precision'][g]:.3f} R={r['recall'][g]:.3f} F1={r['f1'][g]:.3f}")
+        print(f"  >>> macro-F1 = {r['macro_f1']:.3f}   micro-F1 = {r['micro_f1']:.3f}")
+        pd.DataFrame(dict(name=r["names"], precision=r["precision"], recall=r["recall"],
+                          F1=r["f1"])).to_csv(
+            os.path.join(OUT, f"dtae_metrics_{level}.csv"), index=False)
