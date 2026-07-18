@@ -1,26 +1,28 @@
-# figure_pipeline —— 第3章正文出图程序
+# figure_pipeline —— 第3章 17 张程序图预览与复核管线
 
-从 `../matlab/outputs/` 的锁定结果 CSV/JSON 生成第3章全部程序图，统一制图审美
-（对齐参考博士论文：中文标注、语义化配色、序贯蓝色混淆矩阵、干净留白）。
+从仓库锁定 CSV 生成图3-2至图3-19中的 17 张程序图；图3-1和图3-10按手绘规格完成。
+每张程序图同时导出 600 dpi PNG 和矢量 PDF。Python 版本用于一键重建与信息核对，正式
+排版可使用 `thesis/figure_scripts/` 中的 MATLAB/R 脚本。
 
 ## 依赖
 
 ```
 python3 >= 3.9
-numpy, pandas, matplotlib, scipy
-中文字体：文泉驿正黑 (/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc)
+numpy, pandas, matplotlib
+中文字体：文泉驿正黑、微软雅黑、黑体或宋体
 ```
 
 ## 用法
 
 ```bash
 python3 make_all.py        # 重建全部图到 ../thesis/figures/
+python3 validate_outputs.py # 校验19个图号、17组PNG/PDF和2张手绘规格
 ```
 
 单独重建某图，例如：
 
 ```bash
-python3 -c "import style as S; S.apply(); import fig_influence as F; F.fig_influence()"
+python3 -c "import style as S; S.apply(); import fig_dtae as F; F.fig_part_metrics()"
 ```
 
 ## 模块
@@ -29,12 +31,12 @@ python3 -c "import style as S; S.apply(); import fig_influence as F; F.fig_influ
 |---|---|
 | `style.py` | 全局样式、语义配色、中文字体、混淆矩阵配色、九→五族映射常量。 |
 | `dataio.py` | 结果 CSV 读取与九参数→五部件族确定性聚合。 |
-| `fig_influence.py` | 图3-2 影响矩阵结构与可辨识性。 |
-| `fig_estimation.py` | 图3-3 部件退化轨迹估计；图3-4 约束反演的独立价值。 |
-| `fig_detection_isolation.py` | 图3-5 故障检测混淆矩阵；图3-6 五部件族故障隔离。 |
-| `fig_timeline.py` | 图3-7 诊断闭环时间线。 |
-| `fig_stage_unknown_ablation.py` | 图3-8 有序退化等级；图3-9 未知故障拒识；图3-10 消融与鲁棒性。 |
-| `make_all.py` | 一键重建全部图。 |
+| `fig_preprocessing.py` | 图3-2 相似修正；图3-3 健康基准。 |
+| `fig_identifiability.py` | 图3-4 故障指纹；图3-5 病态性与子空间可辨识性。 |
+| `fig_continuous.py` | 图3-6至图3-9 连续退化估计。 |
+| `fig_dtae.py` | 图3-11至图3-18 DTAE 检测、隔离与深度分析。 |
+| `fig_validation.py` | 图3-19 物理约束管线补充鲁棒性。 |
+| `make_all.py` | 一键重建 17 张程序图并清理旧编号产物。 |
 
-所有图只读取锁定结果，不重新拟合、不重新选参、不触碰测试真值做选择。
-框架/算法结构图（图3-1）由作者手绘，不由本流程生成（规格见 `../thesis/figure_specs/`）。
+所有图只读取锁定结果，不重新拟合、不重新选参。多标签混淆图采用“真值类 × 预测类共现率”，
+用于同时表达逐类召回与并发退化，因此行和不要求等于 1，图注中已明确说明。

@@ -1,34 +1,50 @@
-"""一键重建第3章全部程序生成正文图（600 dpi PNG + 矢量 PDF）。
+"""一键重建第3章 17 张程序图（600 dpi PNG + 矢量 PDF）。
 
-用法：  python3 make_all.py
-数据来源：仓库内锁定的 MATLAB 闭环实验 CSV/JSON（见各 fig_*.py）。
-框架/算法结构图（图3-1）由作者手绘，不由本流程生成。
+图3-1（总体框架）与图3-10（DTAE结构）由作者手绘；其余图3-2至图3-19
+全部由本脚本从仓库锁定 CSV 重建，不重新拟合、不重新选参。
 """
 import warnings
 warnings.filterwarnings("ignore")
 
+import os
+
 import style as S
-import fig_influence
-import fig_estimation
-import fig_detection_isolation as fdi
-import fig_timeline
-import fig_stage_unknown_ablation as fsua
+import dataio as D
+import fig_preprocessing as prep
+import fig_identifiability as ident
+import fig_continuous as cont
+import fig_dtae as dtae
+import fig_validation as valid
 
 S.apply()
 
 BUILDERS = [
-    fig_influence.fig_influence,            # 图3-2 影响矩阵结构与可辨识性
-    fig_estimation.fig_trajectory,          # 图3-3 部件退化轨迹估计
-    fig_estimation.fig_constraint_value,    # 图3-4 约束反演的独立价值
-    fdi.fig_detection,                      # 图3-5 故障检测混淆矩阵
-    fdi.fig_family_isolation,               # 图3-6 五部件族故障隔离
-    fig_timeline.fig_timeline,              # 图3-7 诊断闭环时间线
-    fsua.fig_stage,                         # 图3-8 有序退化等级判定
-    fsua.fig_unknown,                       # 图3-9 未知故障拒识
-    fsua.fig_ablation,                      # 图3-10 消融与鲁棒性
+    prep.fig_similarity_correction,         # 图3-2
+    prep.fig_baseline_quality,              # 图3-3
+    ident.fig_fingerprint,                  # 图3-4
+    ident.fig_condition_identifiability,    # 图3-5
+    cont.fig_tracking,                      # 图3-6
+    cont.fig_multiunit_error,               # 图3-7
+    cont.fig_lambda_sensitivity,            # 图3-8
+    cont.fig_constraint_value,              # 图3-9
+    dtae.fig_detection,                     # 图3-11
+    dtae.fig_part_confusion,                # 图3-12
+    dtae.fig_part_metrics,                  # 图3-13
+    dtae.fig_latent,                        # 图3-14
+    dtae.fig_timeline,                      # 图3-15
+    dtae.fig_family_confusion,              # 图3-16
+    dtae.fig_turbine_detail,                # 图3-17
+    dtae.fig_granularity_gain,              # 图3-18
+    valid.fig_robustness,                   # 图3-19
 ]
 
 if __name__ == "__main__":
+    figdir = os.path.join(D.ROOT, "thesis", "figures")
+    # 只清理程序生成图，保留 manifest；避免旧编号和旧结论混入正稿。
+    for name in os.listdir(figdir):
+        if name.startswith("图3-") and name.lower().endswith((".png", ".pdf")):
+            os.remove(os.path.join(figdir, name))
     for build in BUILDERS:
         path = build()
         print("[ok]", path.split("/")[-1])
+    print(f"[done] 共生成 {len(BUILDERS)} 张程序图（每张 PNG+PDF）。")

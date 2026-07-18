@@ -9,6 +9,7 @@
     真值=深灰, ID测试=蓝, 未见组合(OOD)=青绿。
 """
 import os
+os.environ.setdefault("MPLCONFIGDIR", os.path.join(os.path.dirname(__file__), ".mplconfig"))
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -16,12 +17,18 @@ import matplotlib.font_manager as fm
 from matplotlib.colors import LinearSegmentedColormap
 
 # ---------------------------------------------------------------- 中文字体
-_FONT_PATH = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
-if os.path.exists(_FONT_PATH):
-    fm.fontManager.addfont(_FONT_PATH)
-    _CJK = fm.FontProperties(fname=_FONT_PATH).get_name()
-else:  # pragma: no cover
-    _CJK = "sans-serif"
+_FONT_CANDIDATES = [
+    "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc",
+    "C:/Windows/Fonts/msyh.ttc",
+    "C:/Windows/Fonts/simhei.ttf",
+    "C:/Windows/Fonts/simsun.ttc",
+]
+_CJK = "sans-serif"
+for _FONT_PATH in _FONT_CANDIDATES:
+    if os.path.exists(_FONT_PATH):
+        fm.fontManager.addfont(_FONT_PATH)
+        _CJK = fm.FontProperties(fname=_FONT_PATH).get_name()
+        break
 
 # ---------------------------------------------------------------- 语义配色
 FAMILY_COLORS = {
@@ -32,6 +39,14 @@ FAMILY_COLORS = {
     "LPC": "#9467BD",   # 紫
 }
 FAMILY_ORDER = ["HPT", "Fan", "HPC", "LPT", "LPC"]
+
+PART_COLORS = {
+    "风扇": "#2CA02C",
+    "高压压气机": "#1F77B4",
+    "低压压气机": "#9467BD",
+    "涡轮": "#D95F02",
+}
+PART_ORDER = ["风扇", "高压压气机", "低压压气机", "涡轮"]
 
 REGIME_COLORS = {
     "test_id": "#1F77B4",   # 分布内测试 —— 蓝
@@ -106,6 +121,6 @@ def save(fig, path_noext):
     """同时导出 600 dpi PNG 与矢量 PDF。"""
     os.makedirs(os.path.dirname(path_noext), exist_ok=True)
     fig.savefig(path_noext + ".png", dpi=600)
-    fig.savefig(path_noext + ".pdf")
+    fig.savefig(path_noext + ".pdf", metadata={"Creator": "N-CMAPSS thesis figure pipeline"})
     plt.close(fig)
     return path_noext + ".png"

@@ -6,6 +6,10 @@ slprj/
 codegen/
 *.slxc
 *.asv
+figure_pipeline/.mplconfig/
+improve/_seq_cache_*.npz
+thesis/figures/matlab_official/
+thesis/figures/r_official/
 
 # Python cache
 __pycache__/
