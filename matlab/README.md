@@ -75,4 +75,5 @@ run_verify_stage_a
 - `run/`：运行入口。
 - `cache/`：复用模型和正式管线缓存。
 - `outputs/`：原始结果、阶段诊断和裁决；烟测目录与重复划分中间目录不进入版本库。
-- `../chapter3_results/`：正文 8 图清单、7 组程序图、11 张表和章节文稿。
+- `../thesis/`：论文正稿、11 张表、结论边界与正文图清单。
+- `../figure_pipeline/`：从本目录 `outputs/` 锁定 CSV 重建正文图（图3-2 至图3-10）的 Python 出图程序，`run_build_diagnostic_figures` 生成的 MATLAB 图件仅保留在 `outputs/` 内供交叉核对。

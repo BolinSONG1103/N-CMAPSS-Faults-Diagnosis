@@ -1,48 +1,44 @@
-# N-CMAPSS 硕士论文第3章项目
+# N-CMAPSS 硕士论文第3章：物理结构约束的气路故障诊断与退化程度评估
 
-本项目是 MATLAB 主实现。健康基准回归与锁定 NumPy 随机流通过隔离的 Python 兼容层完成，所有直接 Python API 仅位于 `matlab/src/health_baseline_py.m`；其余数据读取、影响矩阵辨识、约束反演、网络、指标、裁决和出图均由 MATLAB 完成。
+本项目围绕 NASA N-CMAPSS 真实飞行工况涡扇发动机退化数据，构建**从异常出现到部件级健康状态的完整诊断闭环**：
 
-## 当前状态
+> 故障发现（相似修正 + 健康基准残差 + 故障检测）→ 识别分类（五部件族隔离）
+> → 趋势与程度（连续退化轨迹 + 有序退化等级）→ 未知拒识（留一故障族开放集）。
 
-项目正在由“连续健康参数反演”升级为“连续估计—故障检测—多标签隔离—有序退化等级—未知故障拒识”的诊断闭环。新协议已经修复旧版数据驱动对照中的 unit 留出泄漏：健康基准、残差尺度和影响矩阵 H 只使用 train 发动机，lambda 与全部决策阈值只使用 calibration 发动机，test_id、DS02 与 DS03 不参与模型选择。
+方法以数据辨识的传感器—部件影响矩阵表示故障物理指纹，通过非正—单调重参数化把不可逆退化先验写入解空间，以 Tikhonov 收缩处理 $\text{cond}(H_n)\approx1563$ 的病态反问题，并在连续估计之上建立统一决策层。计算主体为 MATLAB；健康基准回归与锁定随机流经隔离的 Python 兼容层（仅 `matlab/src/health_baseline_py.m`）完成。
 
-闭环研究定义与结论边界见 `docs/第三章诊断闭环研究协议.md`；论文重构稿见 `chapter3_results/第3章诊断闭环重构稿.md`；实现入口见 `matlab/README.md`。正式闭环、鲁棒性、图组验证和五次 unit 重复划分已经完成；结果边界与失败项见 `chapter3_results/诊断闭环结果审查.md`。
+## 目录结构
 
-旧版 T0-T5、阶段 A 与阶段 B/C 产物暂时保留用于追溯连续反演方法的形成过程，但不属于诊断闭环 v2 的正式验证结果。旧版“E1 分布内公平性通过”不再属于正式结论，因为旧管线在声明留出单元前已经使用全部 dev 单元构造物理方法。
+| 目录 | 内容 |
+|---|---|
+| `thesis/` | **论文交付物**：第3章正稿、正文图（图3-2–图3-10）、表格、手绘图规格、结论边界。 |
+| `figure_pipeline/` | **正文出图程序**（Python）：从锁定结果 CSV 一键重建全部程序图，统一制图审美。 |
+| `matlab/` | MATLAB 主实现：管线、实验入口、单元测试与锁定输出（`outputs/` 为证据 CSV/JSON）。 |
+| `reference/` | 已定案的 Python 参考脚本与固定结果（影响矩阵、oracle 等），仅供追溯。 |
+| `docs/` | 冻结的研究协议、部件族补充协议、任务书与学习手册。 |
+| `legacy/` | 归档：被取代的旧稿与旧图（git 可追溯，不参与正稿与出图）。 |
 
-锁定 HistGB 管线得到 cond(H_n)=1562.791820。MATLAB LSBoost 对照的条件数为 2048.976413，漂移 31.11%，因此 HistGB 兼容层是复现正式数字的永久依赖，而非临时过渡代码。
+## 快速开始
 
-## 目录
+重建全部正文图（无需 MATLAB，仅依赖 numpy/pandas/matplotlib/scipy）：
 
-- `matlab/src/`：共享管线、实验实现、最终出图和验证器。
-- `matlab/run/`：可直接运行的 MATLAB 入口。
-- `matlab/cache/`：影响矩阵管线和健康基准模型缓存。
-- `matlab/outputs/`：T0-T3、阶段 A 和阶段 B/C 的 raw CSV 与 verdict JSON。
-- `matlab/outputs/t4_diagnostic_closure/`：主划分的正式诊断闭环证据。
-- `matlab/outputs/t5_robustness_ablation/`：约束消融与传感器扰动证据。
-- `matlab/outputs/t6_repeated_splits/`：五次划分的汇总证据；各 seed 中间目录不进入版本库。
-- `chapter3_results/figures/`：程序生成的图3-2至图3-8，每图含 600 dpi PNG 和矢量 PDF。
-- `chapter3_results/tables/`：表1至表11。
-- `chapter3_results/第3章完整稿.md`：完整章节正文。
-- `reference/`：已定案的 Python 参考脚本及固定结果，仅用于追溯。
-- `docs/`：原始任务书与项目学习手册。
-
-## 最终构建与验证
-
-```matlab
-cd('D:/PythonProjects/N-CMAPSS-fault-diagnosis/matlab/run')
-run_21_diagnostic_closure
-run_22_robustness_ablation
-run_build_diagnostic_figures
-run_verify_diagnostic_closure
-run_23_repeated_splits
-run_24_family_diagnosis
+```bash
+cd figure_pipeline && python3 make_all.py      # 输出到 thesis/figures/（600 dpi PNG + 矢量 PDF）
 ```
 
-前四个入口形成并验证单次正式闭环；最后一个入口在五个 unit 划分下重新拟合健康基准、H、lambda 和决策层，用于评估结论对机队划分的稳定性。
+重跑实验（需 MATLAB 与 N-CMAPSS 原始数据，见 `matlab/README.md`）：
 
-`run_23_repeated_splits` 默认在所有跨划分表写入成功后删除四个可再生 seed 中间目录，只保留 `t6_repeated_splits` 汇总；如需调试，可直接调用 `experiment_23_repeated_splits(true)` 保留中间目录。
+```matlab
+cd matlab/run
+run_21_diagnostic_closure      % 正式闭环：检测/隔离/等级/拒识
+run_22_robustness_ablation     % 约束消融与鲁棒性
+run_23_repeated_splits         % 五次 unit 划分稳定性
+run_24_family_diagnosis        % 五部件族诊断补充实验
+```
 
-`run_24_family_diagnosis` 是依据 `docs/部件族诊断补充协议.md` 冻结的独立补充实验：直接读取 v2 正式 CSV，把锁定的九参数标签映射为 HPT、Fan、HPC、LPT、LPC 五个物理部件族。它不依赖缓存、不重新选参、不覆盖 v2 结果，也不改变检测、阶段和未知故障协议。
+## 结论边界（诚实性）
 
-需要复核既有连续反演阶段时，仍可使用 `run_t0_acceptance`、`run_19b`、`run_20`、`run_tau_check` 和阶段 A 入口，但其输出不得覆盖闭环 v2 的正式结果。
+正式结果保留全部预注册失败项：未见故障组合检测虚警偏高（FAR≈0.55）且首次报警早于真实起点；
+物理重构不一致度对单参数 HPT 故障拒识失败且具重复性；精细部件隔离对噪声较敏感；标定 $\lambda$ 跨划分不确定性较大。
+详见 `thesis/结果审查与结论边界.md` 与 `docs/第三章诊断闭环研究协议.md`。数据辨识矩阵 $H$ 不宣称为第一性原理模型；
+数据定义的退化等级不等同于适航或 OEM 告警阈值；合成数据结论不直接外推真实机队。
