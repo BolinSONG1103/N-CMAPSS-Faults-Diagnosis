@@ -23,3 +23,8 @@ __pycache__/
 Thumbs.db
 .DS_Store
 docs/~$*
+
+# improve 缓存与预览
+improve/_seq_cache*.npz
+improve/*_preview.png
+improve/__pycache__/
