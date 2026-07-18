@@ -24,13 +24,18 @@ OUT = os.path.dirname(__file__)
 
 
 def features(s):
+    """残差 R + 多尺度时序 + 退化加速度 + 连续估计 θ̂ 动态 + 高低压涡轮物理区分特征。"""
     R = s["R"]; df = pd.DataFrame(R)
     m5 = df.rolling(5, min_periods=1).mean().values
     m10 = df.rolling(10, min_periods=1).mean().values
+    m15 = df.rolling(15, min_periods=1).mean().values
     slope = (df - df.shift(8)).fillna(0).values
+    accel = (df - 2 * df.shift(4) + df.shift(8)).fillna(0).values       # 退化加速度
     sev = np.maximum(0, -s["theta_hat"])
     sdf = pd.DataFrame(sev); ssl = (sdf - sdf.shift(8)).fillna(0).values
-    return np.hstack([R, m5, m10, slope, sev, ssl])
+    # 高压涡轮出口 T48(idx5) 与低压涡轮出口 T50(idx6) 的差/比，区分 HPT vs LPT
+    hpvlp = np.column_stack([R[:, 5] - R[:, 6], R[:, 5] / (np.abs(R[:, 6]) + 0.5)])
+    return np.hstack([R, m5, m10, m15, slope, accel, sev, ssl, hpvlp])
 
 
 def fam_multi(s):
@@ -58,8 +63,8 @@ def train_split(seed):
         te.append((s, X, Y, fam_sev(s), np.sort(idx[cut:])))
     Xtr = np.vstack(Xtr); Ytr = np.vstack(Ytr).astype(float)
     mu = Xtr.mean(0); sd = Xtr.std(0) + 1e-8
-    net = DTAE((Xtr - mu).shape[1], 20, 5, lambda_cls=3.0, noise=0.25, mask=0.1,
-               lr=3e-3, epochs=600, batch=128, seed=seed).fit((Xtr - mu) / sd, Ytr)
+    net = DTAE((Xtr - mu).shape[1], 24, 5, lambda_cls=3.0, noise=0.25, mask=0.1,
+               lr=3e-3, epochs=700, batch=128, seed=seed).fit((Xtr - mu) / sd, Ytr)
     return net, mu, sd, te
 
 
