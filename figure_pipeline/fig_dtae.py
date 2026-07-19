@@ -47,7 +47,7 @@ def fig_detection():
     ax = fig.add_subplot(gs[0]); _heatmap(ax, row, "(a) 逐循环检测混淆矩阵")
     ax = fig.add_subplot(gs[1])
     labels = ["事件级\n检出率", "健康循环\n正确拒绝率", "四部件\nmacro-F1", "四部件\nmicro-F1"]
-    values = [vals["event_detection_rate"], 1-vals["healthy_cycle_far"], vals["macro_f1"], vals["micro_f1"]]
+    values = [vals["event_detection_rate"], float(row.iloc[0, 0]), vals["macro_f1"], vals["micro_f1"]]
     bars = ax.bar(labels, values, color=[S.D_COLOR, "#5AAE61", S.B_COLOR, S.ACCENT], edgecolor="white")
     ax.set_ylim(0, 1.08); ax.axhline(.95, color="#777777", ls="--", lw=1, label="0.95参考线")
     ax.set_ylabel("指标值"); ax.set_title("(b) 检测与主隔离关键指标", loc="left"); ax.grid(axis="y", alpha=.35)

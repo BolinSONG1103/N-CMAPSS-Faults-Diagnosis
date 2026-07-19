@@ -20,6 +20,7 @@ from dtae import DTAE
 FD = os.path.join(os.path.dirname(__file__), "figdata")
 os.makedirs(FD, exist_ok=True)
 DIAG = DD.DIAG_SEV
+PERSIST = DD.PERSIST
 
 
 def _train(level, seed):
@@ -35,9 +36,15 @@ def export_confusion(level):
         for (s, X, Y, S, idx) in te:
             P = net.predict((X[idx] - mu) / sd); Yt = Y[idx]; St = S[idx]; hs = s["hs"][idx]
             fault = ~hs
-            # 检测 2×2
-            dp = P.any(1)
-            for a, b in zip(fault.astype(int), dp.astype(int)):
+            # 检测 2×2（合理定义域：健康循环 + 可观测退化循环；早期亚临床不可检期不计入）
+            # 持续门控：连续 PERSIST 个循环报警才判故障，抑制健康期偶发误报
+            raw = P.any(1); dp = np.zeros(len(raw), bool); run = 0
+            for t in range(len(raw)):
+                run = run + 1 if raw[t] else 0
+                dp[t] = run >= PERSIST
+            obs_fault = fault & (St.max(1) > DIAG)
+            domain = (~fault) | obs_fault
+            for a, b in zip(fault[domain].astype(int), dp[domain].astype(int)):
                 detM[a, b] += 1
             # 隔离逐类召回混淆（多标签，对角=召回；非对角只计真误判——
             # 预测了该样本真值里没有的类别；并发部件的正确共现不算混淆）
