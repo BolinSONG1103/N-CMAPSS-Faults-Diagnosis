@@ -60,17 +60,25 @@ def fig_condition_identifiability():
     ax.text(0.96, 0.92, f"cond($H_n$) = {cond:.1f}", transform=ax.transAxes,
             ha="right", va="top", bbox=dict(fc="#FFF3E0", ec="#D9A55A", pad=4))
 
+    # (b) 检查单元层"可分"、涡轮内单参数层"不可分"——统一支撑四部件合并
+    unit_idx = {"风扇": [1, 2], "高压压气机": [3, 4], "低压压气机": [7, 8], "涡轮": [0, 5, 6]}
+    tparam = {"HPT效率": [0], "LPT效率": [5], "LPT流量": [6]}
+    unit_ang = [float(_principal_angle(Hn, idx)) for idx in unit_idx.values()]
+    tp_ang = [float(_principal_angle(Hn, idx)) for idx in tparam.values()]
     ax = fig.add_subplot(gs[1])
-    cols = [S.FAMILY_COLORS[x] for x in fam]
-    bars = ax.bar(fam, angles, color=cols, edgecolor="white")
-    for b, v in zip(bars, angles):
-        ax.text(b.get_x()+b.get_width()/2, v+0.7, f"{v:.2f}°", ha="center", fontsize=10)
-    ax.axhline(10, color="#777777", ls="--", lw=1, label="10°参考线")
-    ax.set_ylabel("该部件族子空间到其余部件子空间的最小主夹角")
-    ax.set_title("(b) 部件族子空间可辨识性", loc="left")
-    ax.grid(axis="y", alpha=0.35); ax.legend(loc="upper left")
-    ax.text(0.98, 0.88, "HPT/LPT 子空间几乎与\n其余部件组合空间相交",
-            transform=ax.transAxes, fontsize=9, ha="right", va="top",
-            bbox=dict(fc="white", ec="#BBBBBB", alpha=.88, pad=3))
-    fig.suptitle("影响矩阵病态性与可辨识性边界", y=1.02, fontsize=14)
+    x1 = np.arange(4); x2 = np.arange(3) + 5.0
+    ax.bar(x1, unit_ang, color="#2CA02C", edgecolor="white", label="四检查单元（可分）")
+    ax.bar(x2, tp_ang, color="#D62728", edgecolor="white", label="涡轮内单参数（不可分）")
+    for x, v in zip(x1, unit_ang):
+        ax.text(x, v + 0.6, f"{v:.1f}°", ha="center", fontsize=9.5)
+    for x, v in zip(x2, tp_ang):
+        ax.text(x, v + 0.6, f"{v:.2f}°", ha="center", fontsize=9.5)
+    ax.axhline(10, color="#777777", ls="--", lw=1)
+    ax.text(4.4, 10.8, "10° 可分参考线", fontsize=8.5, color="#777777", ha="center")
+    ax.set_xticks(list(x1) + list(x2))
+    ax.set_xticklabels(list(unit_idx) + list(tparam), rotation=25, ha="right", fontsize=9)
+    ax.set_ylabel("到其余部件子空间的最小主夹角 (°)")
+    ax.set_title("(b) 检查单元可分、涡轮内不可分", loc="left")
+    ax.grid(axis="y", alpha=0.35); ax.legend(loc="upper right", fontsize=9)
+    fig.suptitle("影响矩阵病态性与部件可辨识性", y=1.02, fontsize=14)
     return S.save(fig, os.path.join(FIGDIR, "图3-5_病态性与子空间可辨识性"))
