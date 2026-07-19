@@ -100,16 +100,18 @@ def fig_latent():
 
 def fig_timeline():
     d = pd.read_csv(os.path.join(FD, "timeline.csv"), encoding="utf-8-sig")
-    fig = plt.figure(figsize=(11.5, 6.1)); gs=GridSpec(3,1,height_ratios=[2.1,.65,.9],hspace=.20,figure=fig)
+    fig = plt.figure(figsize=(11.5, 6.4)); gs=GridSpec(3,1,height_ratios=[2.1,.65,.9],hspace=.42,figure=fig)
     ax=fig.add_subplot(gs[0]);
     ax.plot(d.cycle,d.severity_true,color=S.TRUTH_COLOR,lw=2.3,label="真实严重度")
     ax.plot(d.cycle,d.severity_est,color=S.D_COLOR,lw=1.8,label="估计严重度")
     ax.fill_between(d.cycle,0,d.severity_est,color=S.D_COLOR,alpha=.08)
     ax.set_ylabel("量程归一化严重度"); ax.set_title("(a) 连续退化程度",loc="left"); ax.grid(alpha=.3); ax.legend()
+    ax.tick_params(labelbottom=False)   # 与下方子图共享横轴，隐藏中间刻度标签避免与标题碰撞
     ax=fig.add_subplot(gs[1],sharex=ax)
     ax.step(d.cycle,d.detected,where="mid",color=S.B_COLOR,lw=1.8)
     ax.fill_between(d.cycle,0,d.detected,step="mid",color=S.B_COLOR,alpha=.22)
     ax.set_yticks([0,1]); ax.set_yticklabels(["正常","报警"]); ax.set_title("(b) 故障检测",loc="left")
+    ax.tick_params(labelbottom=False)
     ax=fig.add_subplot(gs[2],sharex=ax)
     labels=list(dict.fromkeys(["正常"]+d.truth.tolist()+d.pred.tolist()))
     cmap=ListedColormap(["#F0F0F0"]+[S.PART_COLORS.get(x,"#756BB1") for x in labels[1:]])
