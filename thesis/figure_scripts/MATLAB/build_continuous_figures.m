@@ -167,18 +167,22 @@ savepair(f,outDir,'图3-9_约束反演的独立价值');
 end
 
 function draw_robustness(t,outDir)
+% 只考核连续估计主线合法拥有的两项指标：估计RMSE相对倍数与事件检测F1；隔离交由DTAE主线
 t=t(t.regime=="test_id",:); n=sortrows(t(t.perturbation=="noise",:),'amplitude'); b=sortrows(t(t.perturbation=="bias",:),'amplitude');
-miss=t(t.perturbation=="missing_channel",:);
+miss=t(t.perturbation=="missing_channel",:); base=n.mean_RMSE(1);
 f=newfig(18,8); tl=tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact'); ax=nexttile(tl); hold(ax,'on');
-plot(ax,n.amplitude,n.mean_RMSE/n.mean_RMSE(1),'-o','DisplayName','RMSE相对倍数');plot(ax,n.amplitude,n.mean_detection_F1,'-s','DisplayName','检测F1');plot(ax,n.amplitude,n.mean_isolation_macroF1,'-^','DisplayName','隔离macro-F1');
-grid(ax,'on');xlabel(ax,'附加噪声幅值（健康残差标准差倍数）');ylabel(ax,'相对误差/指标值');title(ax,'(a) 加性噪声鲁棒性');legend(ax);
-ax=nexttile(tl);hold(ax,'on');plot(ax,b.amplitude,b.mean_detection_F1,'-o','DisplayName','检测F1');plot(ax,b.amplitude,b.mean_isolation_macroF1,'-s','DisplayName','隔离macro-F1');
+plot(ax,n.amplitude,n.mean_RMSE/base,'-o','Color',[.84 .15 .16],'DisplayName','估计RMSE相对倍数');
+plot(ax,n.amplitude,n.mean_detection_F1,'-s','Color',[.12 .47 .71],'DisplayName','事件检测F1');
+yline(ax,1,':','Color',[.73 .73 .73]); grid(ax,'on');xlabel(ax,'附加噪声幅值（健康残差标准差倍数）');ylabel(ax,'相对倍数/指标值');ylim(ax,[.6 1.45]);title(ax,'(a) 加性噪声鲁棒性');legend(ax,'Location','best');
+ax=nexttile(tl);hold(ax,'on');
+plot(ax,b.amplitude,b.mean_RMSE/base,'-o','Color',[.84 .15 .16],'DisplayName','估计RMSE相对倍数');
+plot(ax,b.amplitude,b.mean_detection_F1,'-s','Color',[.12 .47 .71],'DisplayName','事件检测F1');
 if height(miss)>0
     xm=max(b.amplitude)+.18;
-    scatter(ax,xm,miss.mean_detection_F1(1),65,[.46 .42 .70],'d','filled','DisplayName','单通道缺失：检测F1');
-    scatter(ax,xm,miss.mean_isolation_macroF1(1),70,[.19 .64 .33],'p','filled','DisplayName','单通道缺失：隔离macro-F1');
+    scatter(ax,xm,miss.mean_RMSE(1)/base,70,[.46 .42 .70],'d','filled','DisplayName','单通道缺失：RMSE相对倍数');
+    scatter(ax,xm,miss.mean_detection_F1(1),80,[.19 .64 .33],'p','filled','DisplayName','单通道缺失：检测F1');
 end
-grid(ax,'on');xlabel(ax,'固定偏置幅值 / 缺失通道情形');ylabel(ax,'指标值');ylim(ax,[0 1.02]);title(ax,'(b) 偏置与通道缺失');legend(ax,'Location','best');
+yline(ax,1,':','Color',[.73 .73 .73]); grid(ax,'on');xlabel(ax,'固定偏置幅值 / 缺失通道情形');ylabel(ax,'相对倍数/指标值');ylim(ax,[.6 1.45]);title(ax,'(b) 偏置与通道缺失鲁棒性');legend(ax,'Location','best');
 savepair(f,outDir,'图3-17_物理约束管线鲁棒性');
 end
 
