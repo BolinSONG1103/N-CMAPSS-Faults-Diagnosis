@@ -117,8 +117,11 @@ def fig_constraint_value():
     ax.bar(x-w/2, dvals, w, color=S.D_COLOR, label="约束 D")
     ax.bar(x+w/2, bvals, w, color=S.B_COLOR, label="无约束 B")
     ax.set_xticks(x); ax.set_xticklabels(["估计RMSE", "未退化部件虚警"]); ax.set_ylabel("量程归一化误差")
-    ax.set_title("(a) 硬约束的独立价值", loc="left"); ax.grid(axis="y", alpha=.35); ax.legend()
-    for i in range(2): ax.text(i, max(dvals[i], bvals[i])*1.05, f"×{bvals[i]/dvals[i]:.1f}", ha="center")
+    ax.set_title("(a) 硬约束的独立价值", loc="left"); ax.grid(axis="y", alpha=.35)
+    ax.set_ylim(0, max(max(dvals), max(bvals)) * 1.20)   # 预留顶部空间，避免倍数标注与标题碰撞
+    ax.legend(loc="upper right")
+    for i in range(2):
+        ax.text(i, max(dvals[i], bvals[i]) * 1.02, f"×{bvals[i]/dvals[i]:.1f}", ha="center", va="bottom")
 
     ax = fig.add_subplot(gs[1]); t8 = pd.read_csv(TABLE8); t8=t8[t8.arm!="Z_zero"].sort_values("ood_skill")
     name = {"D":"D（本章）", "E_Lin":"线性", "E_MixLinear":"线性时序", "E_MLP":"MLP", "E_WPMixer":"WPMixer"}
