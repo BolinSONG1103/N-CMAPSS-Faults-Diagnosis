@@ -61,7 +61,7 @@ def fig_detection():
 def fig_part_confusion():
     df = _read_matrix("confusion_part.csv")
     fig, ax = plt.subplots(figsize=(7.2, 6.1)); _heatmap(ax, df, "四部件主诊断逐类召回/共现矩阵")
-    ax.text(0.01, -0.19, "注：多标签并发退化时，同一真实类别可与多个预测类别共现，行和不要求等于 1。",
+    ax.text(0.01, -0.19, "注：对角为逐部件召回率；并发退化部件的正确共现按真值计入、不计为混淆。",
             transform=ax.transAxes, fontsize=9)
     return S.save(fig, os.path.join(FIGDIR, "图3-12_四部件主诊断混淆矩阵"))
 
@@ -127,7 +127,7 @@ def fig_timeline():
 def fig_family_confusion():
     df=_read_matrix("confusion_family.csv")
     fig,ax=plt.subplots(figsize=(7.4,6.2)); _heatmap(ax,df,"五部件族细分逐类召回/共现矩阵")
-    ax.text(.01,-.17,"HPC-LPC 非对角共现对应 DS06 的真实并发退化；HPT-LPT 项反映涡轮内部混叠。",
+    ax.text(.01,-.17,"注：对角为逐类召回；非对角仅涡轮内 HPT↔LPT 真实混叠（气路指纹近共线所致）。",
             transform=ax.transAxes,fontsize=9)
     return S.save(fig,os.path.join(FIGDIR,"图3-16_五部件族细分混淆矩阵"))
 

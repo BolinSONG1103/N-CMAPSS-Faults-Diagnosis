@@ -39,13 +39,17 @@ def export_confusion(level):
             dp = P.any(1)
             for a, b in zip(fault.astype(int), dp.astype(int)):
                 detM[a, b] += 1
-            # 隔离逐类召回混淆（多标签命中：对角=召回，非对角=并发/误判比例）
+            # 隔离逐类召回混淆（多标签，对角=召回；非对角只计真误判——
+            # 预测了该样本真值里没有的类别；并发部件的正确共现不算混淆）
             diag = fault & (St.max(1) > DIAG)
             for i in np.where(diag)[0]:
-                for a in np.where(Yt[i])[0]:        # 每个真实退化类
+                truth_set = set(np.where(Yt[i])[0])
+                pred_set = set(np.where(P[i])[0])
+                for a in truth_set:                 # 每个真实退化类
                     rowN[a] += 1
-                    for b in np.where(P[i])[0]:     # 预测包含的类
-                        hit[a, b] += 1
+                    for b in pred_set:
+                        if b == a or b not in truth_set:   # 对角(召回) 或 真误判
+                            hit[a, b] += 1
     conf = hit / np.where(rowN[:, None] == 0, 1, rowN[:, None])   # 行归一化=逐类召回
     pd.DataFrame(conf, index=names, columns=names).to_csv(
         os.path.join(FD, f"confusion_{level}.csv"), encoding="utf-8-sig")
