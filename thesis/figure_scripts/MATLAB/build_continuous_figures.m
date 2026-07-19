@@ -1,6 +1,7 @@
 function build_continuous_figures(repoRoot)
-%BUILD_CONTINUOUS_FIGURES 从锁定CSV生成连续估计侧正式图（图3-2至3-9、图3-19）。
+%BUILD_CONTINUOUS_FIGURES 从锁定CSV生成连续估计侧正式图（图3-2至3-9、图3-17）。
 % 不依赖原始N-CMAPSS数据或pipeline_cache，不重新拟合、不重新选参。
+% 覆盖图3-2至3-9与图3-17（补充鲁棒性）。
 
 if nargin < 1 || strlength(string(repoRoot)) == 0
     here = fileparts(mfilename('fullpath'));
@@ -54,18 +55,23 @@ savepair(f,outDir,'图3-2_相似修正与工况漂移');
 end
 
 function draw_baseline(t,outDir)
-channels=["Nf_c","T48_c","P50_c"];
-f=newfig(18,8); tl=tiledlayout(f,1,4,'TileSpacing','compact','Padding','compact');
-for i=1:3
-    z=t(t.channel==channels(i),:); idx=unique(round(linspace(1,height(z),min(900,height(z)))));
-    ax=nexttile(tl); scatter(ax,z.measured(idx),z.predicted(idx),7,[.12 .47 .71],'filled','MarkerFaceAlpha',.25); hold(ax,'on');
-    lo=min([z.measured;z.predicted]); hi=max([z.measured;z.predicted]); plot(ax,[lo hi],[lo hi],'--','Color',[.2 .2 .2]);
-    axis(ax,'square'); grid(ax,'on'); xlabel(ax,'实测值'); if i==1,ylabel(ax,'健康基准预测值');end
-    title(ax,sprintf('(%c) %s',char('a'+i-1),channels(i))); text(ax,.05,.92,sprintf('R^2=%.5f',z.R2(1)),'Units','normalized');
-end
+% 全通道 (1-R^2) 排序 + 最难拟合通道的诚实散点
 [uch,ia]=unique(t.channel,'stable'); err=(1-t.R2(ia))*1e6; [err,ix]=sort(err); uch=uch(ix);
-ax=nexttile(tl); barh(ax,err,'FaceColor',[.42 .68 .84]); set(ax,'YTick',1:numel(uch),'YTickLabel',uch,'YDir','reverse');
-xlabel(ax,'(1-R^2)×10^6'); title(ax,'(d) 全通道拟合误差'); grid(ax,'on');
+worst=uch(end);
+f=newfig(18,8); tl=tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact');
+% (a) 最难拟合通道散点
+z=t(t.channel==worst,:); idx=unique(round(linspace(1,height(z),min(1200,height(z)))));
+ax=nexttile(tl); scatter(ax,z.measured(idx),z.predicted(idx),8,[.12 .47 .71],'filled','MarkerFaceAlpha',.25); hold(ax,'on');
+lo=min([z.measured;z.predicted]); hi=max([z.measured;z.predicted]); plot(ax,[lo hi],[lo hi],'--','Color',[.2 .2 .2],'DisplayName','理想 y=x');
+respct=100*std(z.measured-z.predicted)/mean(z.measured);
+axis(ax,'square'); grid(ax,'on'); xlabel(ax,'实测值'); ylabel(ax,'健康基准预测值');
+title(ax,'(a) 最难通道的基准拟合');
+text(ax,.05,.9,sprintf('最差拟合通道 %s\nR^2=%.4f\n残差 std=%.3f%% 读数',worst,z.R2(1),respct),'Units','normalized','VerticalAlignment','top');
+% (b) 全通道拟合误差排序（涡轮出口温压通道橙色高亮）
+ax=nexttile(tl); hot=ismember(uch,["T50_c","P50_c","T48_c"]);
+c=repmat([.42 .68 .84],numel(uch),1); c(hot,:)=repmat([.85 .37 .08],sum(hot),1);
+b=barh(ax,err); b.FaceColor='flat'; b.CData=c; set(ax,'YTick',1:numel(uch),'YTickLabel',uch,'YDir','reverse');
+xlabel(ax,'(1-R^2)×10^6（越小越好）'); title(ax,'(b) 全通道拟合误差排序'); grid(ax,'on');
 savepair(f,outDir,'图3-3_健康基准拟合与残差质量');
 end
 
@@ -85,17 +91,23 @@ savepair(f,outDir,'图3-4_影响矩阵故障指纹');
 end
 
 function draw_identifiability(Hn,outDir)
-families={'HPT','Fan','HPC','LPT','LPC'}; idx={1,[2 3],[4 5],[6 7],[8 9]}; angles=zeros(1,5);
-for i=1:5
-    other=setdiff(1:9,idx{i}); q1=orth(Hn(:,idx{i})); q2=orth(Hn(:,other)); s=svd(q1'*q2); angles(i)=acosd(min(1,max(s)));
-end
+% (b) 四检查单元层可分、涡轮内单参数层不可分——统一支撑四部件合并
+unitIdx={[2 3],[4 5],[8 9],[1 6 7]}; unitName={'风扇','高压压气机','低压压气机','涡轮'};
+tpIdx={1,6,7}; tpName={'HPT效率','LPT效率','LPT流量'};
+unitAng=zeros(1,4); for i=1:4,other=setdiff(1:9,unitIdx{i}); s=svd(orth(Hn(:,unitIdx{i}))'*orth(Hn(:,other))); unitAng(i)=acosd(min(1,max(s)));end
+tpAng=zeros(1,3); for i=1:3,other=setdiff(1:9,tpIdx{i}); s=svd(orth(Hn(:,tpIdx{i}))'*orth(Hn(:,other))); tpAng(i)=acosd(min(1,max(s)));end
 sv=svd(Hn); f=newfig(18,8); tl=tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact');
 ax=nexttile(tl); semilogy(ax,1:9,sv,'-o','Color',[.84 .15 .16],'MarkerFaceColor','white'); grid(ax,'on');
 xlabel(ax,'奇异值序号'); ylabel(ax,'奇异值'); title(ax,'(a) 病态性：奇异值谱');
 text(ax,.95,.92,sprintf('cond(H_n)=%.1f',sv(1)/sv(end)),'Units','normalized','HorizontalAlignment','right');
-ax=nexttile(tl); bar(ax,angles,'FaceColor',[.18 .48 .70]); yline(ax,10,'--'); grid(ax,'on');
-set(ax,'XTick',1:5,'XTickLabel',families); ylabel(ax,'到其余部件子空间的最小主夹角 (°)'); title(ax,'(b) 部件族子空间可辨识性');
-for i=1:5,text(ax,i,angles(i)+.7,sprintf('%.2f°',angles(i)),'HorizontalAlignment','center');end
+ax=nexttile(tl); hold(ax,'on'); x1=1:4; x2=6:8;
+b1=bar(ax,x1,unitAng,.6,'FaceColor',[.17 .63 .17],'DisplayName','四检查单元（可分）');
+b2=bar(ax,x2,tpAng,.6,'FaceColor',[.84 .15 .16],'DisplayName','涡轮内单参数（不可分）');
+yline(ax,10,'--','Color',[.47 .47 .47]); grid(ax,'on');
+for i=1:4,text(ax,x1(i),unitAng(i)+.6,sprintf('%.1f°',unitAng(i)),'HorizontalAlignment','center');end
+for i=1:3,text(ax,x2(i),tpAng(i)+.6,sprintf('%.2f°',tpAng(i)),'HorizontalAlignment','center');end
+set(ax,'XTick',[x1 x2],'XTickLabel',[unitName tpName],'XTickLabelRotation',25);
+ylabel(ax,'到其余部件子空间的最小主夹角 (°)'); title(ax,'(b) 检查单元可分、涡轮内不可分'); legend(ax,[b1 b2]);
 savepair(f,outDir,'图3-5_病态性与子空间可辨识性');
 end
 
@@ -136,7 +148,7 @@ function draw_lambda(t,outDir)
 active=["HPT_eff_mod","LPT_eff_mod","LPT_flow_mod"]; lam=unique(t.lambda); rmse=zeros(size(lam));
 for i=1:numel(lam),z=t(t.lambda==lam(i)&ismember(t.parameter,active),:);rmse(i)=sqrt(mean((z.theta_hat_pct-z.theta_true_pct).^2));end
 f=newfig(18,8); tl=tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact'); ax=nexttile(tl);
-semilogx(ax,lam,rmse,'-o','Color',[.84 .15 .16],'MarkerFaceColor','white'); grid(ax,'on'); xlabel(ax,'Tikhonov参数lambda'); ylabel(ax,'活动部件RMSE (%)'); title(ax,'(a) 聚合精度敏感性');
+semilogx(ax,lam,rmse,'-o','Color',[.84 .15 .16],'MarkerFaceColor','white'); grid(ax,'on'); set(ax,'XTick',lam); xlabel(ax,'Tikhonov参数lambda'); ylabel(ax,'活动部件RMSE (%)'); title(ax,'(a) 聚合精度敏感性');
 ax=nexttile(tl); hold(ax,'on'); cols=[.12 .47 .71;.84 .15 .16;.95 .5 .08];
 for i=1:numel(lam),z=t(t.lambda==lam(i)&t.parameter=="LPT_eff_mod",:);plot(ax,z.cycle,z.theta_hat_pct,'Color',cols(i,:),'DisplayName',sprintf('lambda=%g',lam(i)));end
 z=t(t.lambda==lam(1)&t.parameter=="LPT_eff_mod",:);plot(ax,z.cycle,z.theta_true_pct,'--','Color',[.2 .2 .2],'LineWidth',1.5,'DisplayName','真值');
@@ -156,12 +168,18 @@ end
 
 function draw_robustness(t,outDir)
 t=t(t.regime=="test_id",:); n=sortrows(t(t.perturbation=="noise",:),'amplitude'); b=sortrows(t(t.perturbation=="bias",:),'amplitude');
+miss=t(t.perturbation=="missing_channel",:);
 f=newfig(18,8); tl=tiledlayout(f,1,2,'TileSpacing','compact','Padding','compact'); ax=nexttile(tl); hold(ax,'on');
-plot(ax,n.amplitude,n.mean_RMSE/n.mean_RMSE(1),'-o','DisplayName','RMSE相对倍数');plot(ax,n.amplitude,n.mean_detection_F1,'-s','DisplayName','检测F1');plot(ax,n.amplitude,n.mean_stage_kappa,'-^','DisplayName','等级kappa');
-grid(ax,'on');xlabel(ax,'附加噪声幅值');ylabel(ax,'相对误差/指标值');title(ax,'(a) 加性噪声鲁棒性');legend(ax);
-ax=nexttile(tl);hold(ax,'on');plot(ax,b.amplitude,b.mean_detection_F1,'-o','DisplayName','检测F1');plot(ax,b.amplitude,b.mean_stage_kappa,'-s','DisplayName','等级kappa');
-grid(ax,'on');xlabel(ax,'固定偏置幅值');ylabel(ax,'指标值');ylim(ax,[0 1.02]);title(ax,'(b) 固定偏置鲁棒性');legend(ax);
-savepair(f,outDir,'图3-19_物理约束管线鲁棒性');
+plot(ax,n.amplitude,n.mean_RMSE/n.mean_RMSE(1),'-o','DisplayName','RMSE相对倍数');plot(ax,n.amplitude,n.mean_detection_F1,'-s','DisplayName','检测F1');plot(ax,n.amplitude,n.mean_isolation_macroF1,'-^','DisplayName','隔离macro-F1');
+grid(ax,'on');xlabel(ax,'附加噪声幅值（健康残差标准差倍数）');ylabel(ax,'相对误差/指标值');title(ax,'(a) 加性噪声鲁棒性');legend(ax);
+ax=nexttile(tl);hold(ax,'on');plot(ax,b.amplitude,b.mean_detection_F1,'-o','DisplayName','检测F1');plot(ax,b.amplitude,b.mean_isolation_macroF1,'-s','DisplayName','隔离macro-F1');
+if height(miss)>0
+    xm=max(b.amplitude)+.18;
+    scatter(ax,xm,miss.mean_detection_F1(1),65,[.46 .42 .70],'d','filled','DisplayName','单通道缺失：检测F1');
+    scatter(ax,xm,miss.mean_isolation_macroF1(1),70,[.19 .64 .33],'p','filled','DisplayName','单通道缺失：隔离macro-F1');
+end
+grid(ax,'on');xlabel(ax,'固定偏置幅值 / 缺失通道情形');ylabel(ax,'指标值');ylim(ax,[0 1.02]);title(ax,'(b) 偏置与通道缺失');legend(ax,'Location','best');
+savepair(f,outDir,'图3-17_物理约束管线鲁棒性');
 end
 
 function f=newfig(w,h)
