@@ -87,6 +87,9 @@ def fig_lambda_sensitivity():
     ax = fig.add_subplot(gs[0])
     ax.plot(lambdas, agg, "o-", color=S.D_COLOR, mfc="white", ms=8)
     ax.set_xscale("log"); ax.set_xlabel("Tikhonov 正则化参数 λ"); ax.set_ylabel("活动部件 RMSE (%)")
+    # 仅在三个实测工作点打刻度，纯 ASCII 标签，避免对数默认刻度的 mathtext 负号在中文字体下缺字
+    ax.set_xticks(lambdas); ax.set_xticklabels([f"{l:g}" for l in lambdas])
+    ax.xaxis.set_minor_formatter(plt.NullFormatter()); ax.xaxis.set_minor_locator(plt.NullLocator())
     ax.set_title("(a) 聚合精度敏感性", loc="left"); ax.grid(alpha=.35, which="both")
     best = int(np.argmin(agg)); ax.scatter([lambdas[best]], [agg[best]], s=90, color=S.ACCENT, zorder=4)
     ax.text(lambdas[best], agg[best], f"  主工作点 {lambdas[best]:g}", va="bottom")
