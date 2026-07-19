@@ -15,4 +15,4 @@ figure,title,type,builder,data_source,research_question,protocol
 图3-14,代表发动机诊断时间线,program,figure_pipeline/fig_dtae.py,improve/figdata/timeline.csv,连续程度检测与部件隔离如何沿飞行循环闭环联动,分布内在线诊断
 图3-15,五部件族细分混淆矩阵,program,figure_pipeline/fig_dtae.py,improve/figdata/confusion_family.csv,涡轮内部细分与并发退化的共现边界,分布内深度分析
 图3-16,涡轮内部细分边界,program,figure_pipeline/fig_dtae.py,improve/dtae_metrics_family.csv+improve/figdata/confusion_family.csv,HPT与LPT细分的性能与相互混叠程度,分布内深度分析
-图3-17,物理约束管线鲁棒性,program,figure_pipeline/fig_validation.py,matlab/outputs/t5_robustness_ablation/robustness_summary.csv,连续估计及统一决策层对噪声偏置和缺失通道的稳定性,锁定补充验证
+图3-17,物理约束管线鲁棒性,program,figure_pipeline/fig_validation.py,matlab/outputs/t5_robustness_ablation/robustness_summary.csv,连续估计主线的估计RMSE与检测F1对噪声偏置和缺失通道的稳定性,锁定补充验证
