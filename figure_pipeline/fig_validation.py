@@ -32,4 +32,4 @@ def fig_robustness():
     ax.set_xlabel("固定偏置幅值 / 缺失通道情形");ax.set_ylabel("指标值");ax.set_ylim(0,1.02)
     ax.set_title("(b) 偏置与通道缺失",loc="left");ax.grid(alpha=.35);ax.legend(fontsize=9)
     fig.suptitle("物理约束连续估计及其统一决策层的补充鲁棒性验证",y=1.01)
-    return S.save(fig,os.path.join(FIGDIR,"图3-19_物理约束管线鲁棒性"))
+    return S.save(fig,os.path.join(FIGDIR,"图3-17_物理约束管线鲁棒性"))

@@ -11,10 +11,8 @@ figure,title,type,builder,data_source,research_question,protocol
 图3-10,DTAE双任务架构,hand_drawn,thesis/figure_specs/图3-10_DTAE架构_手绘规格.md,-,重构任务与分类任务如何共享潜特征,方法框架
 图3-11,DTAE故障检测,program,figure_pipeline/fig_dtae.py,improve/figdata/detection_confusion.csv+improve/figdata/detection_summary.csv,故障是否被稳定检出以及健康循环虚警水平,分布内在线诊断
 图3-12,四部件主诊断混淆矩阵,program,figure_pipeline/fig_dtae.py,improve/figdata/confusion_part.csv,四个维修检查单元的召回及并发共现结构,分布内在线诊断
-图3-13,四部件逐类性能,program,figure_pipeline/fig_dtae.py,improve/dtae_metrics_part.csv,四部件精确率召回率F1是否均达到论文主指标要求,分布内在线诊断5seed聚合
-图3-14,DTAE潜空间tSNE,program,figure_pipeline/fig_dtae.py,improve/figdata/latent_tsne.csv,潜特征是否形成可解释的类别聚集,分布内在线诊断
-图3-15,代表发动机诊断时间线,program,figure_pipeline/fig_dtae.py,improve/figdata/timeline.csv,连续程度检测与部件隔离如何沿飞行循环闭环联动,分布内在线诊断
-图3-16,五部件族细分混淆矩阵,program,figure_pipeline/fig_dtae.py,improve/figdata/confusion_family.csv,涡轮内部细分与并发退化的共现边界,分布内深度分析
-图3-17,涡轮内部细分边界,program,figure_pipeline/fig_dtae.py,improve/dtae_metrics_family.csv+improve/figdata/confusion_family.csv,HPT与LPT细分的性能与相互混叠程度,分布内深度分析
-图3-18,四部件诊断粒度收益,program,figure_pipeline/fig_dtae.py,improve/dtae_metrics_part.csv+improve/dtae_metrics_family.csv,诊断粒度与物理可辨识性匹配后带来多少性能收益,分布内在线诊断
-图3-19,物理约束管线鲁棒性,program,figure_pipeline/fig_validation.py,matlab/outputs/t5_robustness_ablation/robustness_summary.csv,连续估计及统一决策层对噪声偏置和缺失通道的稳定性,锁定补充验证
+图3-13,DTAE潜空间tSNE,program,figure_pipeline/fig_dtae.py,improve/figdata/latent_tsne.csv,潜特征是否形成可解释的类别聚集,分布内在线诊断
+图3-14,代表发动机诊断时间线,program,figure_pipeline/fig_dtae.py,improve/figdata/timeline.csv,连续程度检测与部件隔离如何沿飞行循环闭环联动,分布内在线诊断
+图3-15,五部件族细分混淆矩阵,program,figure_pipeline/fig_dtae.py,improve/figdata/confusion_family.csv,涡轮内部细分与并发退化的共现边界,分布内深度分析
+图3-16,涡轮内部细分边界,program,figure_pipeline/fig_dtae.py,improve/dtae_metrics_family.csv+improve/figdata/confusion_family.csv,HPT与LPT细分的性能与相互混叠程度,分布内深度分析
+图3-17,物理约束管线鲁棒性,program,figure_pipeline/fig_validation.py,matlab/outputs/t5_robustness_ablation/robustness_summary.csv,连续估计及统一决策层对噪声偏置和缺失通道的稳定性,锁定补充验证

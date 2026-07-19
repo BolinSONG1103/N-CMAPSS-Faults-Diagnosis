@@ -12,7 +12,7 @@
 
 | 目录 | 内容 |
 |---|---|
-| `thesis/` | **论文交付物**：第3章正稿、19 个图号（17 张程序图+2 张手绘规格）、表格与结论边界。 |
+| `thesis/` | **论文交付物**：第3章正稿、17 个图号（15 张程序图+2 张手绘）、表格与结论边界。 |
 | `figure_pipeline/` | **正文出图程序**（Python）：从锁定结果 CSV 一键重建全部程序图，统一制图审美。 |
 | `matlab/` | MATLAB 主实现：管线、实验入口、单元测试与锁定输出（`outputs/` 为证据 CSV/JSON）。 |
 | `reference/` | 已定案的 Python 参考脚本与固定结果（影响矩阵、oracle 等），仅供追溯。 |
@@ -21,7 +21,7 @@
 
 ## 快速开始
 
-重建 17 张程序图（无需 MATLAB/R，仅依赖 numpy/pandas/matplotlib）：
+重建 15 张程序图（无需 MATLAB/R，仅依赖 numpy/pandas/matplotlib）：
 
 ```bash
 cd figure_pipeline && python3 make_all.py

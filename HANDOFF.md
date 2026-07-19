@@ -25,7 +25,7 @@
 - **分类结果要好**，认为原方法不行 → **改用王昆的 DTAE 方法**。
 - **严格收紧标准，每项指标都要过硬，论文里不能出现"算法不行"的表述。**
 - 图要好看、信息量大、能说明问题、数量足以支撑工作量；**框架/算法结构图由作者手绘**。
-- **正式出图用 MATLAB 或 R**：连续估计侧复用 `matlab/src/build_chapter3_complete_figures.m`，DTAE 侧正式脚本见 `thesis/figure_scripts/R/build_dtae_figures.R`；Python 管线生成 17 张同数据预览图，用于无 MATLAB/R 环境的回归测试与视觉核对。
+- **正式出图用 MATLAB 或 R**：连续估计侧复用 `matlab/src/build_chapter3_complete_figures.m`，DTAE 侧正式脚本见 `thesis/figure_scripts/R/build_dtae_figures.R`；Python 管线生成 15 张同数据预览图，用于无 MATLAB/R 环境的回归测试与视觉核对。
 - 项目要整理干净、分类存放、删除冗余。
 - **写本交接手册，保证换 AI 也能沿方向严格执行。**
 - **每步同步 GitHub。**
@@ -107,7 +107,7 @@ DTAE 分类只用 R，结果为主管线级可信；连续估计的 scipy 反演
 - [x] **T2b 落盘图数据**：improve/figdata/ 含 confusion_part/family、detection_confusion、
       latent_tsne、timeline、detection_summary、metrics_*。注：混淆矩阵为逐类召回(对角=召回,
       都>0.96)；HPC-LPC非对角共现是 DS06 并发退化的真实事实，方法同时正确识别两部件(加分项)。
-- [x] **T3 出图脚本与数量扩充**：17 张程序图 + 2 张手绘规格；Python 全量预览已实跑，连续侧 MATLAB R2025a 正式脚本已实跑通过，DTAE R/ggplot2 正式脚本已落盘。当前环境无 R，R 脚本待用户本地执行确认字体。
+- [x] **T3 出图脚本与数量扩充**：15 张程序图 + 2 张手绘规格；Python 全量预览已实跑，连续侧 MATLAB R2025a 正式脚本已实跑通过，DTAE R/ggplot2 正式脚本已落盘。当前环境无 R，R 脚本待用户本地执行确认字体。
 - [x] **T4 连续估计理想呈现**：代表轨迹、多发动机误差、正则化敏感性、约束价值与鲁棒性多口径呈现（相关0.996、%RMSE 0.13%）。
 - [x] **T5 重写第3章正文**：主线一(连续估计) + 主线二(DTAE诊断)，双设定诚实标注；拒识移出主线；撤下不可复现的 8.3° 数值。
 - [x] **T6 更新** 图清单 `thesis/figures/figure_manifest.csv`、`README.md`、`thesis/README.md`。

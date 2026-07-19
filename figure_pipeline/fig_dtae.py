@@ -95,7 +95,7 @@ def fig_latent():
     ax.set_title("DTAE 潜空间的类别聚集结构")
     ax.legend(ncol=3, loc="upper center", bbox_to_anchor=(.5,-.08), frameon=False)
     ax.grid(alpha=.18)
-    return S.save(fig, os.path.join(FIGDIR, "图3-14_DTAE潜空间tSNE"))
+    return S.save(fig, os.path.join(FIGDIR, "图3-13_DTAE潜空间tSNE"))
 
 
 def fig_timeline():
@@ -121,7 +121,7 @@ def fig_timeline():
     handles=[plt.Line2D([0],[0],color=cmap(i),lw=7,label=l) for i,l in enumerate(labels)]
     ax.legend(handles=handles,ncol=min(5,len(handles)),loc="upper center",bbox_to_anchor=(.5,-.38),frameon=False)
     fig.suptitle("代表发动机从退化出现到部件判定的诊断时间线",y=.99)
-    return S.save(fig, os.path.join(FIGDIR, "图3-15_代表发动机诊断时间线"))
+    return S.save(fig, os.path.join(FIGDIR, "图3-14_代表发动机诊断时间线"))
 
 
 def fig_family_confusion():
@@ -129,7 +129,7 @@ def fig_family_confusion():
     fig,ax=plt.subplots(figsize=(7.4,6.2)); _heatmap(ax,df,"五部件族细分逐类召回/共现矩阵")
     ax.text(.01,-.17,"注：对角为逐类召回；非对角仅涡轮内 HPT↔LPT 真实混叠（气路指纹近共线所致）。",
             transform=ax.transAxes,fontsize=9)
-    return S.save(fig,os.path.join(FIGDIR,"图3-16_五部件族细分混淆矩阵"))
+    return S.save(fig,os.path.join(FIGDIR,"图3-15_五部件族细分混淆矩阵"))
 
 
 def fig_turbine_detail():
@@ -146,7 +146,7 @@ def fig_turbine_detail():
     for b,v in zip(bars,vals):ax.text(b.get_x()+b.get_width()/2,v+.006,f"{100*v:.1f}%",ha="center")
     ax.text(.5,.93,"混叠边界与影响矩阵近共线一致",transform=ax.transAxes,ha="center",fontsize=9)
     fig.suptitle("HPT/LPT 细分的可辨识性深度分析",y=1.01)
-    return S.save(fig,os.path.join(FIGDIR,"图3-17_涡轮内部细分边界"))
+    return S.save(fig,os.path.join(FIGDIR,"图3-16_涡轮内部细分边界"))
 
 
 def fig_granularity_gain():

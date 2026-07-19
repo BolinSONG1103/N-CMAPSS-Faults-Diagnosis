@@ -1,6 +1,6 @@
-# figure_pipeline —— 第3章 17 张程序图预览与复核管线
+# figure_pipeline —— 第3章 15 张程序图预览与复核管线
 
-从仓库锁定 CSV 生成图3-2至图3-19中的 17 张程序图；图3-1和图3-10按手绘规格完成。
+从仓库锁定 CSV 生成图3-2至图3-17中的 15 张程序图；图3-1和图3-10按手绘规格完成。
 每张程序图同时导出 600 dpi PNG 和矢量 PDF。Python 版本用于一键重建与信息核对，正式
 排版可使用 `thesis/figure_scripts/` 中的 MATLAB/R 脚本。
 
@@ -36,7 +36,7 @@ python3 -c "import style as S; S.apply(); import fig_dtae as F; F.fig_part_metri
 | `fig_continuous.py` | 图3-6至图3-9 连续退化估计。 |
 | `fig_dtae.py` | 图3-11至图3-18 DTAE 检测、隔离与深度分析。 |
 | `fig_validation.py` | 图3-19 物理约束管线补充鲁棒性。 |
-| `make_all.py` | 一键重建 17 张程序图并清理旧编号产物。 |
+| `make_all.py` | 一键重建 15 张程序图并清理旧编号产物。 |
 
 所有图只读取锁定结果，不重新拟合、不重新选参。多标签混淆图采用“真值类 × 预测类共现率”，
 用于同时表达逐类召回与并发退化，因此行和不要求等于 1，图注中已明确说明。

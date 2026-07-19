@@ -1,6 +1,6 @@
-"""一键重建第3章 17 张程序图（600 dpi PNG + 矢量 PDF）。
+"""一键重建第3章 15 张程序图（600 dpi PNG + 矢量 PDF）。
 
-图3-1（总体框架）与图3-10（DTAE结构）由作者手绘；其余图3-2至图3-19
+图3-1（总体框架）与图3-10（DTAE结构）由作者手绘；其余图3-2至图3-17
 全部由本脚本从仓库锁定 CSV 重建，不重新拟合、不重新选参。
 """
 import warnings
@@ -29,13 +29,11 @@ BUILDERS = [
     cont.fig_constraint_value,              # 图3-9
     dtae.fig_detection,                     # 图3-11
     dtae.fig_part_confusion,                # 图3-12
-    dtae.fig_part_metrics,                  # 图3-13
-    dtae.fig_latent,                        # 图3-14
+    dtae.fig_latent,                        # 图3-13
     dtae.fig_timeline,                      # 图3-15
-    dtae.fig_family_confusion,              # 图3-16
-    dtae.fig_turbine_detail,                # 图3-17
-    dtae.fig_granularity_gain,              # 图3-18
-    valid.fig_robustness,                   # 图3-19
+    dtae.fig_family_confusion,              # 图3-15
+    dtae.fig_turbine_detail,                # 图3-16
+    valid.fig_robustness,                   # 图3-17
 ]
 
 if __name__ == "__main__":
