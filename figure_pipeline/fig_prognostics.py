@@ -37,9 +37,10 @@ def fig_trajectory_rul():
     ax.plot(t.cycle[~hist], t.hi_pred[~hist], color=S.D_COLOR, lw=2.2, ls="--",
             label="趋势外推")
     ax.axhline(thr, color="#777777", ls=":", lw=1.3)
-    ax.text(t.cycle.min(), thr + 0.012, f"维修阈值 {thr:.2f}", fontsize=9, color="#555555")
+    ax.text(t.cycle.min(), thr + 0.015, f"维修阈值 {thr:.2f}", fontsize=9, color="#555555")
+    ytop = float(max(t.band_hi.max(), t.hi_true.max())) * 1.06
     ax.axvline(anchor, color="#999999", lw=1.0, ls="-", alpha=0.7)
-    ax.text(anchor, ax.get_ylim()[1] * 0.02, "预测发起点", rotation=90, va="bottom",
+    ax.text(anchor - 0.6, ytop * 0.985, "预测发起点", rotation=90, va="top",
             ha="right", fontsize=9, color="#666666")
     # 真值/预测越阈循环标记
     def _cross(y):
@@ -51,12 +52,13 @@ def fig_trajectory_rul():
     if cp is not None:
         ax.plot([cp], [thr], "D", color=S.D_COLOR, ms=8, zorder=5)
     if ct is not None and cp is not None:
-        ax.annotate(f"越阈误差 {abs(cp-ct)} 循环", xy=(max(ct, cp), thr),
-                    xytext=(0.60, 0.30), textcoords="axes fraction", fontsize=9,
-                    color="#333333", ha="left")
+        mid = (ct + cp) / 2
+        ax.annotate(f"越阈误差 {abs(cp-ct)} 循环", xy=(mid, thr),
+                    xytext=(mid, thr + 0.24), fontsize=9, color="#333333", ha="center",
+                    arrowprops=dict(arrowstyle="->", color="#888888", lw=0.9))
     ax.set_xlabel("飞行循环"); ax.set_ylabel("量程归一化健康指标")
     ax.set_title(f"(a) 退化轨迹外推（{subset} u{unit}，自 {anchor} 循环外推）", loc="left")
-    ax.set_ylim(bottom=-0.02)
+    ax.set_ylim(-0.02, ytop)
     ax.grid(alpha=0.3); ax.legend(loc="upper left", fontsize=9.5)
 
     # (b) alpha-lambda RUL 漏斗
