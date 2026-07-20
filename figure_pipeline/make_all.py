@@ -1,7 +1,8 @@
-"""一键重建第3章 15 张程序图（600 dpi PNG + 矢量 PDF）。
+"""一键重建第3章 17 张程序图（600 dpi PNG + 矢量 PDF）。
 
-图3-1（总体框架）与图3-10（DTAE结构）由作者手绘；其余图3-2至图3-17
+图3-1（总体框架）与图3-10（DTAE结构）由作者手绘；其余图3-2至图3-19
 全部由本脚本从仓库锁定 CSV 重建，不重新拟合、不重新选参。
+主线三（趋势预测）图数据先由 improve/trend_prediction.py 生成到 improve/figdata/。
 """
 import warnings
 warnings.filterwarnings("ignore")
@@ -15,6 +16,7 @@ import fig_identifiability as ident
 import fig_continuous as cont
 import fig_dtae as dtae
 import fig_validation as valid
+import fig_prognostics as prog
 
 S.apply()
 
@@ -34,6 +36,8 @@ BUILDERS = [
     dtae.fig_family_confusion,              # 图3-15
     dtae.fig_turbine_detail,                # 图3-16
     valid.fig_robustness,                   # 图3-17
+    prog.fig_trajectory_rul,                # 图3-18（趋势外推+RUL）
+    prog.fig_accuracy_vs_life,              # 图3-19（精度随观测寿命）
 ]
 
 if __name__ == "__main__":

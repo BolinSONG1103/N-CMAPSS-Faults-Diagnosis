@@ -56,6 +56,24 @@
   关键突破：加入连续估计 θ̂ 退化时间动态 + 高低压涡轮温度(T48/T50)区分 + 退化加速度特征。
 - 已知边界（有物理解释，非"算法不行"）：LPT↔HPT 存在混叠，与影响矩阵部件族子空间极小主夹角一致；渐进退化早期亚临床期难检 → 用**事件级检测 + 逐循环混淆**共同呈现。此前 8.3° 数值未能由当前仓库脚本复现，已从正文与图中撤下，避免不可追溯数字。
 
+### 主线三：退化趋势预测与剩余寿命（RUL）——本章闭环收尾环节（新增）
+- **定位**：把"故障发现→部件识别→程度估计"闭合到"**趋势预测**"，回答"趋势如何、还能用多久"。
+  这是本章相对王昆 PBM+DTAE **诊断**基线新增的**预测性**环节（用户明确的差异点"我多了趋势预测的部分"）。
+- **健康指标 HI**：主线一连续估计得到的各活动部件量程归一化严重度的**逐循环因果上包络**（单调、
+  仅用当前及历史）。方法 D 已在跨机隔离下以 corr 0.996 复原该退化信号（3.4 节），故对其外推合法。
+- **模型**：物理约束**指数退化模型** HI(τ)=c0+c1(e^{kτ}−1)，c1≥0,k≥0（不可逆加速退化）。曲率 k 引入
+  **机队总体先验**（先验均值 k_mu 仅由 calibration 发动机全寿命拟合），测试发动机在观测历史上做 MAP
+  估计，先验权重随外推跨度自适应（外推越远先验越强、历史越长数据越主导）——**无任何测试集调参**。
+- **RUL**：预注册维修严重度阈值 HI_f=0.30，预测 HI 首次越阈循环得 RUL。
+- **真实指标（真实退化序列，improve/trend_prediction.py 可复现）**：
+  · **分布内(ID)**：RUL **RMSE 1.70 循环、MAE 1.19 循环**；轨迹外推 RMSE 随观测寿命 50%→90% 由 23%→6% 量程；
+    RUL 绝对误差 60% 寿命后 <2 循环、80% 寿命后 <1 循环。
+  · **未见组合(OOD)**：RUL RMSE 2.98、MAE 2.29 循环；同样单调收敛。
+  · α-λ(±20%) 在**近失效**处受精度带急剧收窄（RUL 小→±1 循环）出现标准伪影，用**漏斗收敛图+RUL RMSE**
+    共同呈现（图3-18(b)），不以单一 α-λ 数字下结论。这是诚实呈现，非短板。
+- **诚实边界**：亚临床早期（退化未可观测）不预测 RUL；预测自"退化可观测(HI>0.05)"发起，符合工程预测惯例。
+  n_engine 小（ID 5 / OOD 9）已如实标注；逐机+汇总同时报告。
+
 ### 关键洞察（为何这样定，勿走回头路）
 - 分类在"跨机 unit 隔离 + 每族仅 1 标定单元"设定下，**阈值法 0.41 / 随机森林 0.46/0.23 / DTAE 0.32 全部上不去**——瓶颈是**数据设定**，不是方法。改王昆式分布内设定后 DTAE → 0.84。**所以必须"方法(DTAE) + 设定(分布内)"一起换。**
 - HPT 单参数**开放集拒识** 0.5° 共线，原理不可解，**已移出主线**（分布内诊断框架不需要拒识）。
@@ -86,6 +104,9 @@ improve/                    DTAE 诊断与算法改进（真实数据试验台�
   dtae.py                   双任务自编码器（numpy 手写，重构+分类+加噪掩码）
   dtae_diagnosis.py         DTAE 分布内诊断（6类，检测+隔离指标）
   dtae_figures.py           DTAE 王昆式图（混淆矩阵+潜空间）
+  trend_prediction.py       ★主线三：退化趋势预测/RUL（机队先验指数退化模型，MAP+自适应正则）
+  prognostics_metrics.csv   主线三汇总指标（ID/OOD 的 RUL MAE/RMSE、α-λ、轨迹 RMSE）
+  figdata/prog_*.csv        主线三图数据（trajectory 轨迹外推 / funnel RUL漏斗 / accuracy 精度曲线）
 matlab/                     MATLAB 主管线（连续估计+闭环v2）；outputs/ 为锁定证据CSV/JSON
   src/chapter3_diagnostic_lib_v3.m   决策层改进（单元自适应+平滑，供本地跑，非主线）
   src/experiment_25_improved_closure.m  v2 vs v3 对比实验入口
@@ -124,6 +145,14 @@ DTAE 分类只用 R，结果为主管线级可信；连续估计的 scipy 反演
       · R 脚本 `build_dtae_figures.R` 编号对齐为图3-11..3-16（删除已移除的四部件 P/R/F1 柱状图与粒度收益图，修正五族混淆脚注）；
       · MATLAB `build_continuous_figures.m` 同步基准/可辨识性(四检查单元+涡轮内单参数)/λ/鲁棒性(图3-17新口径)；
       · 正文、figure_manifest.csv、figure_scripts/README.md 全部同步。最终 15 程序图 + 2 手绘 = 17，编号与正文严格一致。
+- [x] **T9 主线三：退化趋势预测/RUL（闭环收尾）**：`improve/trend_prediction.py` 已在真实退化序列上实现
+      机队先验指数退化模型 + 自适应 MAP 外推；落盘 `prognostics_metrics.csv` 与 `figdata/prog_*.csv`；
+      新增图3-18（轨迹外推+RUL漏斗）、图3-19（精度随观测寿命）并入 `make_all.py` 与 figure_manifest。
+      真实指标：ID RUL RMSE 1.70 循环、MAE 1.19；轨迹外推 RMSE 50%→90% 寿命由 23%→6%。
+- [ ] **T10 正文并入主线三**：在第3章加"3.x 退化趋势预测与剩余寿命"小节，接主线一/二后收尾闭环；
+      更新引论贡献点、总体框架（图3-1 手绘规格需加"趋势预测"分支）、结果索引与 README。**（下一步）**
+- [ ] **T11 图件美学复审 + 项目整理**：逐图核验（含新图3-18 预测发起点标注轻微重叠可再优化）；
+      清理冗余（legacy/、matlab/outputs/stage_a 大量 PDF 是否入库、缓存），分类存放。
 - [ ] 全程：每步 commit+push；保持 HANDOFF.md 与 TODO 最新。
 
 ---
@@ -137,6 +166,10 @@ cd figure_pipeline && python3 make_all.py
 # DTAE 诊断（真实指标）
 cd improve && python3 dtae_diagnosis.py        # 5 seed 检测/隔离指标
 python3 dtae_figures.py                        # 王昆式诊断图预览
+
+# 主线三：退化趋势预测 / RUL（真实指标 + 图数据）
+cd improve && python3 trend_prediction.py      # ID/OOD 的 RUL 指标 + 落盘 figdata/prog_*.csv
+cd ../figure_pipeline && python3 fig_prognostics.py   # 图3-18/3-19
 
 # 依赖：numpy pandas matplotlib scipy scikit-learn h5py；中文字体 文泉驿正黑
 ```
